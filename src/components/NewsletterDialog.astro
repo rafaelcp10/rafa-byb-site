@@ -1,0 +1,171 @@
+---
+import Field from './Field.astro';
+import Input from './Input.astro';
+import Button from './Button.astro';
+---
+
+<dialog id="newsletter-dialog" class="newsletter-dialog" aria-labelledby="newsletter-dialog-title" aria-describedby="newsletter-dialog-desc">
+  <form id="newsletter-form" method="dialog" class="newsletter-dialog__panel">
+    <div class="newsletter-dialog__head">
+      <div>
+        <h3 id="newsletter-dialog-title">Uma ideia. Uma ação. Toda sexta.</h3>
+        <p id="newsletter-dialog-desc">O e-mail chega antes do vídeo, com o que ficou de fora da edição.</p>
+      </div>
+      <button type="button" aria-label="Fechar" data-newsletter-close class="newsletter-dialog__close">×</button>
+    </div>
+
+    <div class="newsletter-dialog__body" data-newsletter-step="form">
+      <Field label="E-mail" htmlFor="nl-email" hint="Um e-mail por semana. Cancela quando quiser.">
+        <Input id="nl-email" name="email" type="email" placeholder="seu@email.com" required />
+      </Field>
+      <Button type="submit" full data-newsletter-submit>Confirmar inscrição</Button>
+      <p class="newsletter-dialog__error" data-newsletter-error hidden></p>
+    </div>
+
+    <div class="newsletter-dialog__body" data-newsletter-step="success" hidden>
+      <p>Pronto. Na sexta chega a primeira ideia, com uma ação para aplicar no mesmo dia.</p>
+      <Button variant="secondary" full data-newsletter-close>Voltar ao site</Button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+  // Integração real com POST /api/newsletter (ver src/pages/api/newsletter.ts e src/lib/kit.ts).
+  // Em produção estática essa rota só funciona depois de instalar um adapter (Vercel/Netlify/Node)
+  // e configurar KIT_API_KEY + KIT_FORM_ID — enquanto isso, o endpoint responde 501 e o formulário
+  // mostra a mensagem de erro abaixo em vez de fingir sucesso.
+  const dialog = document.getElementById('newsletter-dialog') as HTMLDialogElement | null;
+  const form = document.getElementById('newsletter-form') as HTMLFormElement | null;
+  const emailInput = document.getElementById('nl-email') as HTMLInputElement | null;
+  const submitBtn = form?.querySelector('[data-newsletter-submit]') as HTMLButtonElement | null;
+  const errorEl = form?.querySelector('[data-newsletter-error]') as HTMLElement | null;
+  const formStep = form?.querySelector('[data-newsletter-step="form"]') as HTMLElement | null;
+  const successStep = form?.querySelector('[data-newsletter-step="success"]') as HTMLElement | null;
+
+  function openDialog() {
+    formStep?.removeAttribute('hidden');
+    successStep?.setAttribute('hidden', '');
+    errorEl?.setAttribute('hidden', '');
+    dialog?.showModal();
+  }
+
+  function closeDialog() {
+    dialog?.close();
+  }
+
+  document.querySelectorAll('[data-newsletter-open]').forEach((el) => {
+    el.addEventListener('click', openDialog);
+  });
+
+  document.querySelectorAll('[data-newsletter-close]').forEach((el) => {
+    el.addEventListener('click', closeDialog);
+  });
+
+  dialog?.addEventListener('click', (e) => {
+    if (e.target === dialog) closeDialog();
+  });
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!emailInput?.value || !submitBtn) return;
+
+    errorEl?.setAttribute('hidden', '');
+    submitBtn.disabled = true;
+    const originalLabel = submitBtn.textContent;
+    submitBtn.textContent = 'Enviando...';
+
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailInput.value }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.ok) {
+        formStep?.setAttribute('hidden', '');
+        successStep?.removeAttribute('hidden');
+      } else if (errorEl) {
+        errorEl.textContent = data.error || 'Não foi possível confirmar agora. Tente novamente em instantes.';
+        errorEl.removeAttribute('hidden');
+      }
+    } catch {
+      if (errorEl) {
+        errorEl.textContent = 'Não foi possível conectar. Verifique sua internet e tente de novo.';
+        errorEl.removeAttribute('hidden');
+      }
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+    }
+  });
+</script>
+
+<style>
+  .newsletter-dialog {
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-md);
+    background: transparent;
+    max-width: min(480px, 92vw);
+    width: 100%;
+  }
+  .newsletter-dialog::backdrop {
+    background: var(--overlay-scrim);
+    backdrop-filter: var(--blur-panel);
+    -webkit-backdrop-filter: var(--blur-panel);
+  }
+  .newsletter-dialog__panel {
+    background: var(--surface-card);
+    border: 1px solid var(--border-default);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .newsletter-dialog__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-4);
+  }
+  .newsletter-dialog__head h3 {
+    font-size: var(--text-h3);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-heading);
+    margin: 0;
+  }
+  .newsletter-dialog__head p {
+    margin: var(--space-2) 0 0;
+    font-size: var(--text-small);
+    color: var(--text-secondary);
+  }
+  .newsletter-dialog__close {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0;
+  }
+  .newsletter-dialog__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .newsletter-dialog__body[hidden] {
+    display: none;
+  }
+  .newsletter-dialog__body p {
+    margin: 0;
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+  }
+  .newsletter-dialog__body p.newsletter-dialog__error {
+    font-size: var(--text-small);
+    color: var(--color-error);
+  }
+</style>

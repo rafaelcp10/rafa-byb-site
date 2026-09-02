@@ -1,0 +1,367 @@
+---
+import { getCollection, render } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Badge from '../../components/Badge.astro';
+import Button from '../../components/Button.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import { CATEGORIAS } from '../../data/categorias';
+import { SITE_URL, AUTHOR_NAME, SITE_NAME } from '../../consts';
+
+export async function getStaticPaths() {
+  const artigos = await getCollection('artigos');
+  return artigos.map((artigo) => ({
+    params: { slug: artigo.data.slug },
+    props: { artigo },
+  }));
+}
+
+const { artigo } = Astro.props;
+const { Content, headings } = await render(artigo);
+const indice = headings.filter((h) => h.depth === 2);
+
+const dataFormatada = new Intl.DateTimeFormat('pt-BR', {
+  day: 'numeric',
+  month: 'long',
+  timeZone: 'UTC',
+}).format(artigo.data.data);
+const registroLabel = artigo.data.registro === 'humano' ? 'Humano' : 'Execução';
+const categoria = CATEGORIAS[artigo.data.categoria];
+
+const imageURL = new URL(artigo.data.imagem_capa.src, SITE_URL).toString();
+
+const todosArtigos = await getCollection('artigos');
+const relacionados = todosArtigos
+  .filter((a) => a.data.categoria === artigo.data.categoria && a.data.slug !== artigo.data.slug)
+  .sort((a, b) => b.data.data.valueOf() - a.data.data.valueOf())
+  .slice(0, 3);
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: artigo.data.titulo,
+  description: artigo.data.meta_description,
+  image: [imageURL],
+  datePublished: artigo.data.data.toISOString(),
+  author: { '@type': 'Person', name: AUTHOR_NAME },
+  publisher: { '@type': 'Organization', name: SITE_NAME },
+  mainEntityOfPage: new URL(Astro.url.pathname, SITE_URL).toString(),
+};
+---
+
+<BaseLayout title={artigo.data.titulo_seo} description={artigo.data.meta_description} image={artigo.data.imagem_capa.src} type="article">
+  <script slot="head" is:inline type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+
+  <div class="progress-bar"><div class="progress-bar__fill" data-progress-fill></div></div>
+
+  <main class="container article-page">
+    <a href="/" class="article-page__back">← Todos os artigos</a>
+
+    <header class="article-page__head">
+      <div class="article-page__meta">
+        <Badge tone={artigo.data.registro}>{registroLabel}</Badge>
+        <span>{dataFormatada} · {artigo.data.tempo_leitura} de leitura</span>
+        <a href={`/categoria/${categoria.slug}`} class="article-page__categoria">{categoria.curto}</a>
+      </div>
+      <h1>{artigo.data.titulo}</h1>
+    </header>
+
+    {artigo.data.video_youtube ? (
+      <div class="article-page__video">
+        <iframe
+          src={artigo.data.video_youtube}
+          title={artigo.data.titulo}
+          loading="lazy"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen
+        ></iframe>
+      </div>
+    ) : (
+      <div class="article-page__cover">
+        <Image src={artigo.data.imagem_capa} alt={artigo.data.titulo} width={1200} height={675} priority />
+      </div>
+    )}
+
+    <div class="article-page__layout">
+      {indice.length > 0 && (
+        <aside class="article-page__toc" data-toc>
+          <span class="article-page__toc-label">Neste artigo</span>
+          {indice.map((h) => (
+            <a href={`#${h.slug}`} data-toc-link={h.slug}>{h.text}</a>
+          ))}
+        </aside>
+      )}
+
+      <article class="artigo-corpo">
+        <p class="artigo-corpo__lede">{artigo.data.resumo}</p>
+        <Content />
+
+        <div class="article-page__cta">
+          <p>Recebe o próximo antes de ir ao ar, com o que ficou de fora da edição.</p>
+          <Button data-newsletter-open>Receber o e-mail semanal</Button>
+        </div>
+      </article>
+    </div>
+
+    {relacionados.length > 0 && (
+      <section class="article-page__relacionados">
+        <h2>Continue lendo</h2>
+        <div class="article-page__relacionados-grid">
+          {relacionados.map((a) => <ArticleCard artigo={a} />)}
+        </div>
+      </section>
+    )}
+  </main>
+</BaseLayout>
+
+<script>
+  const fill = document.querySelector('[data-progress-fill]') as HTMLElement | null;
+  const tocLinks = Array.from(document.querySelectorAll<HTMLAnchorElement>('[data-toc-link]'));
+  const headingEls = tocLinks
+    .map((link) => document.getElementById(link.dataset.tocLink || ''))
+    .filter((el): el is HTMLElement => Boolean(el));
+
+  function update() {
+    const doc = document.documentElement;
+    const max = doc.scrollHeight - doc.clientHeight;
+    const pct = max > 0 ? Math.min(1, doc.scrollTop / max) : 0;
+    if (fill) fill.style.width = `${Math.round(pct * 100)}%`;
+
+    let activeId = headingEls[0]?.id;
+    for (const el of headingEls) {
+      if (el.getBoundingClientRect().top < 200) activeId = el.id;
+    }
+    tocLinks.forEach((link) => {
+      link.classList.toggle('is-active', link.dataset.tocLink === activeId);
+    });
+  }
+
+  document.addEventListener('scroll', update, { passive: true });
+  update();
+</script>
+
+<style>
+  .progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    z-index: 50;
+    background: transparent;
+  }
+  .progress-bar__fill {
+    height: 2px;
+    background: var(--color-oliva);
+    width: 0%;
+    transition: width 120ms linear;
+  }
+
+  .article-page { padding-top: var(--space-7); }
+  .article-page__back {
+    font-size: var(--text-small);
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: none;
+  }
+  .article-page__back:hover { color: var(--text-primary); }
+
+  .article-page__head {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding: var(--space-6) 0;
+  }
+  .article-page__meta { display: flex; align-items: center; gap: var(--space-3); }
+  .article-page__meta span { font-size: var(--text-caption); color: var(--text-muted); }
+  .article-page__categoria {
+    font-size: var(--text-caption);
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: 1px solid var(--alpha-oliva-32);
+    margin-left: auto;
+  }
+  .article-page__categoria:hover { color: var(--text-primary); border-color: var(--text-primary); }
+  .article-page__head h1 {
+    font-size: var(--text-h1);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-semibold);
+    max-width: 40ch;
+    text-wrap: pretty;
+  }
+
+  .article-page__video {
+    position: relative;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    aspect-ratio: 16 / 9;
+  }
+  .article-page__video iframe { width: 100%; height: 100%; border: none; }
+
+  .article-page__cover {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    aspect-ratio: 16 / 9;
+  }
+  .article-page__cover :global(img) { width: 100%; height: 100%; object-fit: cover; }
+
+  .article-page__layout {
+    display: grid;
+    gap: var(--space-8);
+    padding-top: var(--space-8);
+  }
+  @media (min-width: 960px) {
+    .article-page__layout { grid-template-columns: 220px minmax(0, 1fr); }
+  }
+
+  .article-page__toc {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  @media (min-width: 960px) {
+    .article-page__toc {
+      position: sticky;
+      top: 108px;
+      align-self: start;
+    }
+  }
+  .article-page__toc-label {
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .article-page__toc a {
+    font-size: var(--text-small);
+    line-height: var(--leading-normal);
+    padding-left: var(--space-3);
+    border-left: 3px solid transparent;
+    color: var(--text-secondary);
+    text-decoration: none;
+  }
+  .article-page__toc a.is-active {
+    color: var(--text-primary);
+    border-left-color: var(--color-oliva);
+  }
+
+  .article-page__cta {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: var(--space-6);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-5);
+    flex-wrap: wrap;
+  }
+  .article-page__cta p {
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+    max-width: 40ch;
+    margin: 0;
+  }
+
+  .article-page__relacionados {
+    border-top: 1px solid var(--border-subtle);
+    margin-top: var(--space-9);
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-8);
+  }
+  .article-page__relacionados h2 {
+    font-size: var(--text-h2);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-medium);
+    padding-bottom: var(--space-5);
+  }
+  .article-page__relacionados-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--space-5);
+  }
+</style>
+
+<style is:global>
+  .artigo-corpo {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
+    max-width: 68ch;
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-relaxed);
+  }
+  .artigo-corpo__lede {
+    color: var(--text-primary);
+    font-size: var(--text-h4);
+    line-height: var(--leading-normal);
+    margin: 0;
+  }
+  .artigo-corpo h2 {
+    font-size: var(--text-h2);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-medium);
+    scroll-margin-top: 120px;
+  }
+  .artigo-corpo p { color: var(--text-secondary); margin: 0; }
+  .artigo-corpo a { color: var(--text-accent); border-bottom: 1px solid var(--alpha-oliva-32); }
+  .artigo-corpo a:hover { color: var(--text-primary); border-color: var(--text-primary); }
+
+  .artigo-corpo .quote-block {
+    margin: 0;
+    padding-left: var(--space-5);
+    border-left: var(--rule-accent-width) solid var(--color-oliva);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    max-width: var(--measure-narrow);
+  }
+  .artigo-corpo .quote-block p {
+    font-family: var(--font-display);
+    font-weight: var(--weight-medium);
+    font-size: var(--text-h3);
+    letter-spacing: var(--tracking-heading);
+    line-height: var(--leading-snug);
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .artigo-corpo .quote-block cite {
+    font-style: normal;
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .artigo-corpo .acao-hoje {
+    background: var(--surface-accent-soft);
+    border: 1px solid var(--border-accent);
+    border-radius: var(--radius-md);
+    padding: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .artigo-corpo .acao-hoje__rotulo {
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--text-primary);
+  }
+  .artigo-corpo .acao-hoje__texto {
+    font-family: var(--font-display);
+    font-size: var(--text-h3);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+    color: var(--text-primary);
+    margin: 0;
+  }
+  .artigo-corpo .acao-hoje__nota {
+    font-size: var(--text-small);
+    color: var(--text-secondary);
+    margin: 0;
+  }
+</style>

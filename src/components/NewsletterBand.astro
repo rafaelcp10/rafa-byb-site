@@ -1,0 +1,46 @@
+---
+import Button from './Button.astro';
+---
+
+<section class="newsletter-band">
+  <div class="container newsletter-band__inner">
+    <div class="newsletter-band__copy">
+      <h2>Uma ideia. Uma ação. Toda sexta.</h2>
+      <p>O e-mail chega antes do vídeo, com o que ficou de fora da edição.</p>
+    </div>
+    <Button size="md" data-newsletter-open>Receber o e-mail semanal</Button>
+  </div>
+</section>
+
+<style>
+  .newsletter-band {
+    border-top: 1px solid var(--border-subtle);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .newsletter-band__inner {
+    padding-block: var(--space-8);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+  }
+  .newsletter-band__copy {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 46ch;
+  }
+  .newsletter-band__copy h2 {
+    font-size: var(--text-h2);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-medium);
+    text-wrap: pretty;
+  }
+  .newsletter-band__copy p {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+  }
+</style>

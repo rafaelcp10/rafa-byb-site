@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.astro/
+.vercel/
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# Artefatos do protótipo original no Claude Design — não fazem parte do site de produção.
+# (barra inicial ancora no root: sem ela, "assets/" também bloquearia src/assets/)
+/Site Rafa Byb.dc.html
+/_ds/
+/support.js
+/uploads/
+/assets/
+/.thumbnail
+/hf_*.png

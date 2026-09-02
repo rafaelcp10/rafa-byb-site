@@ -1,0 +1,59 @@
+---
+interface Props {
+  name: string;
+  value: string;
+  checked?: boolean;
+  label: string;
+  id?: string;
+}
+
+const { name, value, checked = false, label, id } = Astro.props;
+---
+
+<label class="radio" for={id}>
+  <input type="radio" name={name} value={value} checked={checked} id={id} class="radio__input" />
+  <span class="radio__dot"></span>
+  <span class="radio__label">{label}</span>
+</label>
+
+<style>
+  .radio {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 44px;
+    cursor: pointer;
+  }
+  .radio__input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+  }
+  .radio__dot {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
+    border-radius: var(--radius-pill);
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border-default);
+    transition: border-color var(--duration-fast) var(--ease-standard);
+  }
+  .radio__dot::after {
+    content: '';
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-pill);
+    background: var(--action-primary-bg);
+    transform: scale(0);
+    transition: transform var(--duration-fast) var(--ease-standard);
+  }
+  .radio__input:checked ~ .radio__dot { border-color: var(--border-accent); }
+  .radio__input:checked ~ .radio__dot::after { transform: scale(1); }
+  .radio__label {
+    font-family: var(--font-body);
+    font-size: var(--text-small);
+    color: var(--text-primary);
+  }
+</style>

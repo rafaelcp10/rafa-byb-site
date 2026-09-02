@@ -1,0 +1,151 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import QuoteBlock from '../components/QuoteBlock.astro';
+import Card from '../components/Card.astro';
+import Field from '../components/Field.astro';
+import Input from '../components/Input.astro';
+import Radio from '../components/Radio.astro';
+import Checkbox from '../components/Checkbox.astro';
+import Button from '../components/Button.astro';
+
+const title = 'Newsletter | Rafa Byb — Be Your Best';
+const description =
+  'Uma ideia. Uma ação. Toda sexta. O e-mail chega antes do vídeo, com o que ficou de fora da edição.';
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="container newsletter-page">
+    <div class="newsletter-page__grid">
+      <div class="newsletter-page__copy">
+        <Eyebrow register="humano">Newsletter</Eyebrow>
+        <h1>Uma ideia. Uma ação. Toda sexta.</h1>
+        <p>
+          Sem frase motivacional solta. Você recebe o problema, a perspectiva e o que fazer com
+          isso na semana seguinte.
+        </p>
+        <QuoteBlock quote="Conhecimento sem aplicação é entretenimento." />
+      </div>
+
+      <Card padding="var(--space-6)" class="newsletter-page__form-card">
+        <form id="newsletter-page-form" class="newsletter-page__form" data-newsletter-form>
+          <Field label="E-mail" htmlFor="nl-page-email" hint="Você pode sair a qualquer momento.">
+            <Input id="nl-page-email" name="email" type="email" placeholder="voce@email.com" required />
+          </Field>
+
+          <Field label="Que tipo de conteúdo pesa mais para você?">
+            <div class="newsletter-page__radios">
+              <Radio id="reg-execucao" name="registro" value="execucao" label="Execução — disciplina, produtividade, carreira" />
+              <Radio id="reg-humano" name="registro" value="humano" label="Humano — rotina, família, saúde" />
+              <Radio id="reg-ambos" name="registro" value="ambos" checked label="Os dois" />
+            </div>
+          </Field>
+
+          <Checkbox id="nl-consent" name="consent" required label="Concordo em receber um e-mail por semana" />
+
+          <Button type="submit" full size="lg" data-newsletter-submit>Quero receber</Button>
+
+          <p class="newsletter-page__success" data-newsletter-success hidden>
+            Inscrição confirmada. Confira sua caixa de entrada.
+          </p>
+          <p class="newsletter-page__error" data-newsletter-error hidden></p>
+        </form>
+      </Card>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  // Integração real com POST /api/newsletter (ver src/pages/api/newsletter.ts e src/lib/kit.ts).
+  // Em produção estática essa rota só funciona depois de instalar um adapter (Vercel/Netlify/Node)
+  // e configurar KIT_API_KEY + KIT_FORM_ID — enquanto isso, o endpoint responde 501 e o formulário
+  // mostra a mensagem de erro abaixo em vez de fingir sucesso.
+  const form = document.querySelector<HTMLFormElement>('[data-newsletter-form]');
+  const submitBtn = form?.querySelector<HTMLButtonElement>('[data-newsletter-submit]');
+  const success = document.querySelector<HTMLElement>('[data-newsletter-success]');
+  const errorEl = document.querySelector<HTMLElement>('[data-newsletter-error]');
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!submitBtn) return;
+
+    const data = new FormData(form);
+    const email = String(data.get('email') || '');
+    const preferencia = String(data.get('registro') || '');
+
+    errorEl?.setAttribute('hidden', '');
+    submitBtn.disabled = true;
+    const originalLabel = submitBtn.textContent;
+    submitBtn.textContent = 'Enviando...';
+
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, preferencia }),
+      });
+      const json = await res.json().catch(() => ({}));
+
+      if (res.ok && json.ok) {
+        success?.removeAttribute('hidden');
+        form.reset();
+      } else if (errorEl) {
+        errorEl.textContent = json.error || 'Não foi possível confirmar agora. Tente novamente em instantes.';
+        errorEl.removeAttribute('hidden');
+      }
+    } catch {
+      if (errorEl) {
+        errorEl.textContent = 'Não foi possível conectar. Verifique sua internet e tente de novo.';
+        errorEl.removeAttribute('hidden');
+      }
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalLabel;
+    }
+  });
+</script>
+
+<style>
+  .newsletter-page { padding-block: var(--space-9); }
+  .newsletter-page__grid {
+    display: grid;
+    gap: var(--space-8);
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .newsletter-page__grid { grid-template-columns: 1fr 460px; }
+  }
+  .newsletter-page__copy { display: flex; flex-direction: column; gap: var(--space-5); }
+  .newsletter-page__copy h1 {
+    font-size: var(--text-h1);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-semibold);
+    text-wrap: pretty;
+  }
+  .newsletter-page__copy p {
+    color: var(--text-secondary);
+    max-width: var(--measure-text);
+    margin: 0;
+  }
+  .newsletter-page__form { display: flex; flex-direction: column; gap: var(--space-5); }
+  .newsletter-page__radios { display: flex; flex-direction: column; }
+  .newsletter-page__success {
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border-left: var(--rule-accent-width) solid var(--color-success);
+    background: var(--surface-raised);
+    font-size: var(--text-small);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+  }
+  .newsletter-page__error {
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border-left: var(--rule-accent-width) solid var(--color-error);
+    background: var(--surface-raised);
+    font-size: var(--text-small);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+  }
+</style>

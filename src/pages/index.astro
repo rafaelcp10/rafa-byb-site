@@ -1,0 +1,319 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Badge from '../components/Badge.astro';
+import Tag from '../components/Tag.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import PhotoSlot from '../components/PhotoSlot.astro';
+import NewsletterBand from '../components/NewsletterBand.astro';
+import heroImg from '../assets/site/hero-montanha.png';
+import { CATEGORIA_LIST } from '../data/categorias';
+import { SITE_DESCRIPTION } from '../consts';
+
+const artigos = (await getCollection('artigos')).sort(
+  (a, b) => b.data.data.valueOf() - a.data.data.valueOf()
+);
+const destaque = artigos[0];
+const resto = artigos.slice(1);
+
+const dataFormatada = destaque
+  ? new Intl.DateTimeFormat('pt-BR', { day: 'numeric', month: 'long', timeZone: 'UTC' }).format(
+      destaque.data.data
+    )
+  : null;
+
+const registroLabelDestaque = destaque?.data.registro === 'humano' ? 'Humano' : 'Execução';
+const metaDestaque = destaque
+  ? destaque.data.tempo_video
+    ? `${destaque.data.tempo_video} de vídeo · ${destaque.data.tempo_leitura} de leitura`
+    : destaque.data.tempo_leitura
+  : '';
+---
+
+<BaseLayout title="Rafa Byb — Be Your Best" description={SITE_DESCRIPTION}>
+  <main>
+    <section class="hero">
+      <Image src={heroImg} alt="Montanha ao amanhecer" class="hero__img" widths={[640, 1000, 1600, 2000]} sizes="100vw" priority />
+      <div class="hero__gradient"></div>
+      <div class="container hero__inner">
+        <div class="hero__eyebrow-title">
+          <Eyebrow>Um conteúdo por semana</Eyebrow>
+          <h1>Você não precisa se tornar outra pessoa.</h1>
+        </div>
+        <p class="hero__lede">
+          Precisa construir, todos os dias, a melhor versão de si mesmo. Aqui ficam os vídeos em
+          texto: uma ideia, uma perspectiva e uma ação para aplicar hoje.
+        </p>
+      </div>
+    </section>
+
+    {destaque && (
+      <section class="container destaque">
+        <div class="destaque__label">
+          <span>Último conteúdo</span>
+          <span class="destaque__data">{dataFormatada}</span>
+        </div>
+        <a href={`/artigos/${destaque.data.slug}`} class="destaque__grid">
+          <div class="destaque__media">
+            <Image
+              src={destaque.data.imagem_capa}
+              alt={destaque.data.titulo}
+              width={640}
+              height={360}
+              widths={[360, 480, 640]}
+              sizes="(min-width: 900px) 50vw, 100vw"
+            />
+          </div>
+          <div class="destaque__copy">
+            <div class="destaque__meta">
+              <Badge tone={destaque.data.registro}>{registroLabelDestaque}</Badge>
+              <span class="destaque__meta-text">{metaDestaque}</span>
+            </div>
+            <h2>{destaque.data.titulo}</h2>
+            <p>{destaque.data.resumo}</p>
+            <span class="destaque__cta">Ler o artigo e assistir</span>
+          </div>
+        </a>
+      </section>
+    )}
+
+    <section class="container artigos" id="artigos">
+      <div class="artigos__head">
+        <h2>Artigos</h2>
+        <div class="artigos__filtros" data-filtros>
+          <Tag active data-filtro="todos">Todos</Tag>
+          {CATEGORIA_LIST.map((c) => (
+            <Tag data-filtro={c.id}>{c.curto}</Tag>
+          ))}
+        </div>
+      </div>
+
+      {resto.length === 0 ? (
+        <p class="artigos__vazio">Mais artigos chegam nas próximas semanas.</p>
+      ) : (
+        <div class="artigos__grid" data-grid>
+          {resto.map((a) => (
+            <div data-categoria={a.data.categoria}>
+              <ArticleCard artigo={a} />
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+
+    <section class="container sobre-teaser">
+      <div class="sobre-teaser__grid">
+        <div class="sobre-teaser__photo">
+          <PhotoSlot register="humano" ratio="1 / 1" label="Foto do Rafael" />
+        </div>
+        <div class="sobre-teaser__copy">
+          <Eyebrow>Quem escreve</Eyebrow>
+          <h2>Eu sou Rafael.</h2>
+          <p>
+            Levei anos no piloto automático antes de entender que disciplina não é castigo: é a
+            forma mais direta de cuidar de quem você quer ser. Hoje construo isso todos os dias,
+            com trabalho, treino e família no mesmo lugar.
+          </p>
+          <p>
+            Aqui não tem motivação vazia nem promessa de sete dias. Tem uma ideia por semana,
+            testada na minha própria rotina, com uma ação para você aplicar hoje.
+          </p>
+          <a href="/sobre" class="sobre-teaser__link">Conhecer a minha história</a>
+        </div>
+      </div>
+    </section>
+
+    <NewsletterBand />
+  </main>
+</BaseLayout>
+
+<script>
+  const filtros = document.querySelector('[data-filtros]');
+  const grid = document.querySelector('[data-grid]');
+
+  filtros?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('[data-filtro]') as HTMLElement | null;
+    if (!btn) return;
+    const filtro = btn.dataset.filtro;
+
+    filtros.querySelectorAll('[data-filtro]').forEach((el) => el.setAttribute('aria-pressed', 'false'));
+    btn.setAttribute('aria-pressed', 'true');
+
+    grid?.querySelectorAll<HTMLElement>('[data-categoria]').forEach((card) => {
+      const show = filtro === 'todos' || card.dataset.categoria === filtro;
+      card.style.display = show ? '' : 'none';
+    });
+  });
+</script>
+
+<style>
+  .hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+  }
+  .hero__img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+  }
+  .hero__gradient {
+    position: absolute;
+    inset: 0;
+    background: var(--protection-gradient);
+    z-index: -1;
+  }
+  .hero__inner {
+    padding-block: var(--space-9) var(--space-8);
+    display: grid;
+    gap: var(--space-8);
+    align-items: end;
+  }
+  .hero__eyebrow-title {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+  .hero__eyebrow-title h1 {
+    font-size: clamp(2.5rem, 6vw, var(--text-display));
+    line-height: var(--leading-tight);
+    letter-spacing: var(--tracking-display);
+    font-weight: var(--weight-semibold);
+    text-wrap: pretty;
+  }
+  .hero__lede {
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    max-width: 42ch;
+    margin: 0;
+  }
+  @media (min-width: 900px) {
+    .hero__inner { grid-template-columns: 1.2fr 0.8fr; }
+  }
+
+  .destaque { padding-top: var(--space-5); }
+  .destaque__label {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-4);
+    padding-bottom: var(--space-5);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--border-subtle);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .destaque__data { margin-left: auto; text-transform: none; font-weight: var(--weight-regular); }
+  .destaque__grid {
+    display: grid;
+    gap: var(--space-7);
+    align-items: center;
+    padding-bottom: var(--space-8);
+    text-decoration: none;
+    color: inherit;
+  }
+  .destaque__media {
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    aspect-ratio: 16 / 9;
+  }
+  .destaque__media :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .destaque__copy { display: flex; flex-direction: column; gap: var(--space-4); }
+  .destaque__meta { display: flex; align-items: center; gap: var(--space-3); }
+  .destaque__meta-text { font-size: var(--text-caption); color: var(--text-muted); }
+  .destaque__copy h2 {
+    font-size: var(--text-h1);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-semibold);
+    text-wrap: pretty;
+  }
+  .destaque__copy p {
+    font-size: var(--text-body);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    max-width: 52ch;
+    margin: 0;
+  }
+  .destaque__cta {
+    font-size: var(--text-small);
+    color: var(--text-accent);
+    border-bottom: 1px solid var(--alpha-oliva-32);
+    align-self: flex-start;
+    padding-bottom: 2px;
+  }
+  @media (min-width: 900px) {
+    .destaque__grid { grid-template-columns: 1.05fr 0.95fr; }
+  }
+
+  .artigos__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-5);
+    flex-wrap: wrap;
+    border-top: 1px solid var(--border-subtle);
+    padding: var(--space-6) 0 var(--space-5);
+  }
+  .artigos__head h2 {
+    font-size: var(--text-h2);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-medium);
+  }
+  .artigos__filtros { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .artigos__vazio {
+    font-size: var(--text-body);
+    color: var(--text-secondary);
+    padding-bottom: var(--space-6);
+  }
+  .artigos__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-5);
+    padding-bottom: var(--space-6);
+  }
+
+  .sobre-teaser { padding-top: var(--space-9); }
+  .sobre-teaser__grid {
+    border-top: 1px solid var(--border-subtle);
+    padding-block: var(--space-8);
+    display: grid;
+    gap: var(--space-8);
+    align-items: center;
+  }
+  .sobre-teaser__photo { max-width: 280px; }
+  .sobre-teaser__copy { display: flex; flex-direction: column; gap: var(--space-4); }
+  .sobre-teaser__copy h2 {
+    font-size: var(--text-h2);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-medium);
+    text-wrap: pretty;
+  }
+  .sobre-teaser__copy p {
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    max-width: 56ch;
+    margin: 0;
+  }
+  .sobre-teaser__link {
+    font-size: var(--text-small);
+    color: var(--text-accent);
+    border-bottom: 1px solid var(--alpha-oliva-32);
+    align-self: flex-start;
+    padding-bottom: 2px;
+    text-decoration: none;
+  }
+  @media (min-width: 900px) {
+    .sobre-teaser__grid { grid-template-columns: 280px minmax(0, 1fr); }
+  }
+</style>

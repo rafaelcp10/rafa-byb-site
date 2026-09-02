@@ -1,0 +1,152 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Eyebrow from '../../components/Eyebrow.astro';
+import Card from '../../components/Card.astro';
+import ArticleCard from '../../components/ArticleCard.astro';
+import NewsletterBand from '../../components/NewsletterBand.astro';
+import { CATEGORIA_LIST, CATEGORIAS } from '../../data/categorias';
+
+export async function getStaticPaths() {
+  return CATEGORIA_LIST.map((categoria) => ({
+    params: { slug: categoria.slug },
+    props: { categoria },
+  }));
+}
+
+const { categoria } = Astro.props;
+const todosArtigos = await getCollection('artigos');
+const artigosDaCategoria = todosArtigos
+  .filter((a) => a.data.categoria === categoria.id)
+  .sort((a, b) => b.data.data.valueOf() - a.data.data.valueOf());
+
+const relacionadas = categoria.relacionadas.map((id) => {
+  const rel = CATEGORIAS[id];
+  const count = todosArtigos.filter((a) => a.data.categoria === id).length;
+  return { ...rel, count };
+});
+---
+
+<BaseLayout title={categoria.seoTitle} description={categoria.metaDescription}>
+  <main>
+    <section class="container cat-intro">
+      <nav class="cat-breadcrumb" aria-label="Trilha">
+        <a href="/">Início</a>
+        <span>›</span>
+        <span aria-current="page">{categoria.nome}</span>
+      </nav>
+      <div class="cat-intro__body">
+        <Eyebrow>/categoria/{categoria.slug}</Eyebrow>
+        <h1>{categoria.nome}</h1>
+        <p>{categoria.intro}</p>
+      </div>
+    </section>
+
+    <section class="container cat-artigos">
+      <div class="cat-artigos__label">Artigos desta categoria</div>
+      {artigosDaCategoria.length === 0 ? (
+        <Card tone="flat" padding="var(--space-7)" class="cat-artigos__vazio">
+          <h3>Primeiro conteúdo em produção.</h3>
+          <p>
+            Esta categoria já está aberta, mas ainda não tem artigo publicado. Entre na lista do
+            e-mail semanal e você recebe o primeiro assim que ele sair.
+          </p>
+        </Card>
+      ) : (
+        <div class="cat-artigos__grid">
+          {artigosDaCategoria.map((a) => <ArticleCard artigo={a} />)}
+        </div>
+      )}
+    </section>
+
+    <section class="container cat-relacionadas">
+      <h2>Categorias relacionadas</h2>
+      <div class="cat-relacionadas__grid">
+        {relacionadas.map((c) => (
+          <Card interactive padding="var(--space-6)" href={`/categoria/${c.slug}`}>
+            <span class="cat-relacionadas__count">{c.count} {c.count === 1 ? 'artigo' : 'artigos'}</span>
+            <h3>{c.nome}</h3>
+            <span class="cat-relacionadas__cta">Ver a categoria</span>
+          </Card>
+        ))}
+      </div>
+    </section>
+
+    <NewsletterBand />
+  </main>
+</BaseLayout>
+
+<style>
+  .cat-intro { padding-block: var(--space-7); }
+  .cat-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--text-caption);
+    color: var(--text-muted);
+    padding-bottom: var(--space-6);
+  }
+  .cat-breadcrumb a { color: var(--text-secondary); text-decoration: none; border-bottom: none; }
+  .cat-breadcrumb a:hover { color: var(--text-primary); }
+  .cat-breadcrumb [aria-current] { color: var(--text-primary); }
+  .cat-intro__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    border-top: 1px solid var(--border-subtle);
+    padding-top: var(--space-6);
+  }
+  .cat-intro__body h1 {
+    font-size: var(--text-h1);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-semibold);
+    max-width: 24ch;
+    text-wrap: pretty;
+  }
+  .cat-intro__body p {
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    max-width: 68ch;
+    text-wrap: pretty;
+    margin: 0;
+  }
+
+  .cat-artigos__label {
+    border-top: 1px solid var(--border-subtle);
+    padding: var(--space-5) 0;
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .cat-artigos__vazio { display: flex; flex-direction: column; gap: var(--space-3); }
+  .cat-artigos__vazio h3 { font-size: var(--text-h3); letter-spacing: var(--tracking-heading); font-weight: var(--weight-medium); }
+  .cat-artigos__vazio p { font-size: var(--text-body); line-height: var(--leading-relaxed); color: var(--text-secondary); max-width: 52ch; margin: 0; }
+  .cat-artigos__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-5);
+    padding-bottom: var(--space-6);
+  }
+
+  .cat-relacionadas { padding-top: var(--space-9); }
+  .cat-relacionadas h2 {
+    border-top: 1px solid var(--border-subtle);
+    padding: var(--space-6) 0 var(--space-5);
+    font-size: var(--text-h2);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-medium);
+  }
+  .cat-relacionadas__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: var(--space-5);
+  }
+  .cat-relacionadas__grid > :global(a) { display: flex; flex-direction: column; gap: var(--space-3); }
+  .cat-relacionadas__count { font-size: var(--text-caption); color: var(--text-muted); }
+  .cat-relacionadas__grid h3 { font-size: var(--text-h3); line-height: var(--leading-snug); letter-spacing: var(--tracking-heading); font-weight: var(--weight-medium); }
+  .cat-relacionadas__cta { font-size: var(--text-small); color: var(--text-accent); }
+</style>

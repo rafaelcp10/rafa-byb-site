@@ -1,0 +1,51 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Button from '../components/Button.astro';
+
+const title = 'Página não encontrada | Rafa Byb — Be Your Best';
+const description = 'Essa página não existe ou foi movida.';
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="container not-found">
+    <span class="not-found__eyebrow">Erro 404</span>
+    <h1>Essa página quebrou o próprio compromisso de existir.</h1>
+    <p>O link que te trouxe aqui está errado ou a página foi movida. Volta pra home e continua de onde parou.</p>
+    <Button href="/">Voltar para a home</Button>
+  </main>
+</BaseLayout>
+
+<style>
+  .not-found {
+    min-height: 60vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: var(--space-4);
+    padding-block: var(--space-9);
+    max-width: 52ch;
+  }
+  .not-found__eyebrow {
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-oliva);
+  }
+  .not-found h1 {
+    font-size: var(--text-h1);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-semibold);
+    text-wrap: pretty;
+  }
+  .not-found p {
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    margin: 0 0 var(--space-2);
+  }
+  .not-found :global(.btn) {
+    align-self: flex-start;
+  }
+</style>

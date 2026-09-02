@@ -1,0 +1,40 @@
+---
+interface Props {
+  register?: 'execucao' | 'humano';
+  class?: string;
+}
+
+const { register = 'execucao', class: className } = Astro.props;
+---
+
+<span class:list={['eyebrow', className]} data-register={register}>
+  <span class="eyebrow__bar"></span>
+  <span class="eyebrow__label"><slot /></span>
+</span>
+
+<style>
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .eyebrow__bar {
+    width: 24px;
+    height: 2px;
+    background: var(--register-execucao);
+  }
+  .eyebrow[data-register='humano'] .eyebrow__bar {
+    background: var(--register-humano);
+  }
+  .eyebrow__label {
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+  .eyebrow[data-register='humano'] .eyebrow__label {
+    color: var(--color-verde-areia);
+  }
+</style>

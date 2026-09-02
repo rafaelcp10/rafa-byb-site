@@ -1,0 +1,78 @@
+---
+import Wordmark from './Wordmark.astro';
+import Button from './Button.astro';
+
+const path = Astro.url.pathname;
+const isHome = path === '/';
+---
+
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a href="/" class="site-header__brand" aria-label="Rafa Byb — início">
+      <Wordmark mark="wordmark" tagline={false} size="md" />
+    </a>
+    <nav class="site-header__nav" aria-label="Navegação principal">
+      <a href="/" class:list={['site-header__link', { 'site-header__link--active': isHome }]}>Início</a>
+      <a href="/#artigos" class="site-header__link">Artigos</a>
+      <a href="/sobre" class:list={['site-header__link', { 'site-header__link--active': path === '/sobre' }]}>Sobre</a>
+      <span class="site-header__soon">Produtos<span class="site-header__soon-tag">em breve</span></span>
+    </nav>
+    <Button size="sm" data-newsletter-open>Newsletter</Button>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    background: rgba(28, 28, 30, 0.88);
+    backdrop-filter: var(--blur-panel);
+    -webkit-backdrop-filter: var(--blur-panel);
+    border-bottom: 1px solid var(--border-subtle);
+  }
+  .site-header__inner {
+    height: 76px;
+    display: flex;
+    align-items: center;
+    gap: var(--space-7);
+  }
+  .site-header__brand { display: flex; align-items: center; }
+  .site-header__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+    margin-left: auto;
+  }
+  .site-header__link {
+    font-size: var(--text-small);
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding-bottom: 2px;
+    border-bottom: 2px solid transparent;
+  }
+  .site-header__link:hover { color: var(--text-primary); }
+  .site-header__link--active {
+    color: var(--text-primary);
+    border-bottom-color: var(--color-oliva);
+  }
+  .site-header__soon {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    font-size: var(--text-small);
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+  .site-header__soon-tag {
+    font-size: 10px;
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--color-oliva);
+  }
+
+  @media (max-width: 720px) {
+    .site-header__nav { gap: var(--space-4); }
+    .site-header__soon { display: none; }
+  }
+</style>

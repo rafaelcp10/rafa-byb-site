@@ -1,0 +1,12 @@
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--surface-base);color:var(--text-primary);font-family:var(--font-body);font-size:var(--text-body);line-height:var(--leading-relaxed);-webkit-font-smoothing:antialiased;text-wrap:pretty}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:var(--weight-semibold);letter-spacing:var(--tracking-heading);line-height:var(--leading-snug);margin:0}
+h1{font-size:var(--text-h1);letter-spacing:var(--tracking-display);line-height:var(--leading-tight)}
+h2{font-size:var(--text-h2)}
+h3{font-size:var(--text-h3);font-weight:var(--weight-medium)}
+h4{font-size:var(--text-h4);font-weight:var(--weight-medium)}
+p{margin:0 0 var(--space-4)}
+a{color:var(--text-accent);text-decoration:none;border-bottom:1px solid var(--alpha-oliva-32);transition:color var(--duration-fast) var(--ease-standard),border-color var(--duration-fast) var(--ease-standard)}
+a:hover{color:var(--text-primary);border-color:var(--text-primary)}
+:focus-visible{outline:none;box-shadow:var(--focus-ring)}
+::selection{background:var(--alpha-oliva-32);color:var(--text-primary)}

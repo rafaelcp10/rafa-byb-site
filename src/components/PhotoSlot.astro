@@ -1,0 +1,39 @@
+---
+// Placeholder até a foto real do Rafael ser enviada. Troque por um <Image> assim que ela chegar.
+interface Props {
+  register?: 'execucao' | 'humano';
+  label?: string;
+  ratio?: string;
+  class?: string;
+}
+
+const { register = 'humano', label = 'Foto do Rafael', ratio = '1 / 1', class: className } = Astro.props;
+---
+
+<div class:list={['photo-slot', className]} style={{ aspectRatio: ratio }} data-register={register} role="img" aria-label={label}>
+  <span>{label}</span>
+</div>
+
+<style>
+  .photo-slot {
+    width: 100%;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    display: grid;
+    place-items: center;
+    background: linear-gradient(140deg, #26262a, #494a3d);
+  }
+  .photo-slot[data-register='humano'] {
+    background: linear-gradient(140deg, #3e3e44, #b4b4a3);
+  }
+  .photo-slot span {
+    font-family: var(--font-body);
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--alpha-off-white-64);
+    padding: 0 var(--space-4);
+    text-align: center;
+  }
+</style>

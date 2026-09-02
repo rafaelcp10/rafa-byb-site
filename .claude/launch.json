@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "rafa-byb-astro",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["dist/server/entry.mjs"],
+      "port": 4321
+    },
+    {
+      "name": "rafa-byb-astro-dev",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\node.exe",
+      "runtimeArgs": ["node_modules/astro/astro.js", "dev"],
+      "port": 4321
+    }
+  ]
+}

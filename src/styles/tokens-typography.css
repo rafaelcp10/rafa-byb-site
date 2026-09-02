@@ -1,0 +1,33 @@
+:root{
+--font-display:"Familjen Grotesk","Space Grotesk",system-ui,sans-serif;
+--font-body:"Inter","Public Sans",system-ui,sans-serif;
+--font-mono:ui-monospace,"SFMono-Regular",Menlo,monospace;
+
+--weight-regular:400;
+--weight-medium:500;
+--weight-semibold:600;
+--weight-bold:700;
+
+/* Escala de tela (mín. corpo 14px, mín. legenda 12px) */
+--text-caption:12px;
+--text-small:14px;
+--text-body:16px;
+--text-body-lg:18px;
+--text-h4:20px;
+--text-h3:24px;
+--text-h2:32px;
+--text-h1:44px;
+--text-display:64px;
+--text-display-xl:88px;
+
+--leading-tight:1.04;
+--leading-snug:1.16;
+--leading-normal:1.5;
+--leading-relaxed:1.62;
+
+--tracking-display:-0.03em;
+--tracking-heading:-0.015em;
+--tracking-body:0;
+--tracking-label:0.08em;
+--tracking-wordmark:0.02em;
+}

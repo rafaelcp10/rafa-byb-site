@@ -1,0 +1,94 @@
+:root{
+/* --- Paleta primária (aprovada, v2) --- */
+--color-chumbo:#1C1C1E;
+--color-off-white:#F2F0EB;
+--color-oliva:#76785C;
+
+/* --- Variações tonais do verde --- */
+--color-verde-areia:#B4B4A3;
+--color-verde-profundo:#494A3D;
+
+/* --- Neutro de apoio --- */
+--color-pedra:#8B8983;
+
+/* --- Neutros derivados (steps de superfície; não constam no doc de marca) --- */
+--color-chumbo-900:#141416;
+--color-chumbo-800:#1C1C1E;
+--color-chumbo-700:#26262A;
+--color-chumbo-600:#313136;
+--color-chumbo-500:#3E3E44;
+--color-off-white-200:#E7E4DC;
+--color-off-white-300:#D8D4C9;
+--color-white:#FFFFFF;
+
+/* --- Cores funcionais (sistema; nunca decorativas) --- */
+--color-success:#494A3D;
+--color-warning:#C68A3D;
+--color-error:#8C3B2E;
+
+/* --- Alfas de marca --- */
+--alpha-oliva-16:rgba(118,120,92,.16);
+--alpha-oliva-32:rgba(118,120,92,.32);
+--alpha-off-white-08:rgba(242,240,235,.08);
+--alpha-off-white-16:rgba(242,240,235,.16);
+--alpha-off-white-64:rgba(242,240,235,.64);
+--alpha-chumbo-08:rgba(28,28,30,.08);
+--alpha-chumbo-16:rgba(28,28,30,.16);
+--alpha-chumbo-64:rgba(28,28,30,.64);
+
+/* --- Semânticos: tema escuro (padrão da marca) --- */
+--surface-base:var(--color-chumbo-800);
+--surface-sunken:var(--color-chumbo-900);
+--surface-card:var(--color-chumbo-700);
+--surface-raised:var(--color-chumbo-600);
+--surface-accent:var(--color-oliva);
+--surface-accent-soft:var(--alpha-oliva-16);
+--surface-inverse:var(--color-off-white);
+
+--text-primary:var(--color-off-white);
+--text-secondary:var(--alpha-off-white-64);
+--text-muted:var(--color-pedra);
+--text-accent:var(--color-verde-areia);
+--text-on-accent:var(--color-off-white);
+--text-inverse:var(--color-chumbo-800);
+
+--border-subtle:var(--alpha-off-white-08);
+--border-default:var(--alpha-off-white-16);
+--border-strong:var(--color-chumbo-500);
+--border-accent:var(--color-oliva);
+
+/* v3: fundo escurecido para verde-profundo (oliva puro dava 3.99:1 com texto off-white,
+   abaixo do mínimo de 4.5:1 do WCAG AA). Oliva vira o hover, mais claro. */
+--action-primary-bg:var(--color-verde-profundo);
+--action-primary-bg-hover:var(--color-oliva);
+--action-primary-fg:var(--color-off-white);
+--action-secondary-bg:transparent;
+--action-secondary-fg:var(--color-off-white);
+--action-focus-ring:var(--color-verde-areia);
+
+/* --- Registros editoriais --- */
+--register-execucao:var(--color-oliva);
+--register-humano:var(--color-verde-areia);
+}
+
+/* Tema claro: fundo off-white, texto chumbo. Nunca off-white em texto sobre claro. */
+[data-theme="light"]{
+--surface-base:var(--color-off-white);
+--surface-sunken:var(--color-off-white-200);
+--surface-card:var(--color-white);
+--surface-raised:var(--color-white);
+--surface-inverse:var(--color-chumbo-800);
+
+--text-primary:var(--color-chumbo-800);
+--text-secondary:var(--alpha-chumbo-64);
+--text-muted:var(--color-pedra);
+--text-accent:var(--color-verde-profundo);
+--text-inverse:var(--color-off-white);
+
+--border-subtle:var(--alpha-chumbo-08);
+--border-default:var(--alpha-chumbo-16);
+--border-strong:var(--color-off-white-300);
+
+--action-secondary-fg:var(--color-chumbo-800);
+--action-focus-ring:var(--color-verde-profundo);
+}

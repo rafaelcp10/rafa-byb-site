@@ -1,0 +1,181 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Badge from '../components/Badge.astro';
+import Card from '../components/Card.astro';
+import Button from '../components/Button.astro';
+import PhotoSlot from '../components/PhotoSlot.astro';
+import NewsletterBand from '../components/NewsletterBand.astro';
+
+const abas = [
+  {
+    id: 'proposta',
+    label: 'Proposta',
+    titulo: 'O que o projeto é',
+    texto:
+      'Desenvolvimento pessoal que une ambição e disciplina com presença familiar e equilíbrio. Não é motivação momentânea, nem hustle cego: é construção diária com responsabilidade.',
+  },
+  {
+    id: 'metodo',
+    label: 'Método',
+    titulo: 'Como cada conteúdo é feito',
+    texto:
+      'Todo conteúdo parte de um problema real, apresenta uma perspectiva clara e termina com uma aplicação prática. Um conteúdo principal por semana, adaptado entre YouTube e Instagram.',
+  },
+  {
+    id: 'valores',
+    label: 'Valores',
+    titulo: 'O que conta como sucesso',
+    texto:
+      'Ser confiável, cumprir a própria palavra, cuidar do corpo e da mente, construir uma carreira significativa e estar presente para a família.',
+  },
+];
+
+const numeros: [string, string][] = [
+  ['1', 'conteúdo principal por semana'],
+  ['2', 'registros editoriais'],
+  ['3', 'passos: problema, perspectiva, ação'],
+];
+
+const title = 'Sobre o Rafa Byb | Rafa Byb — Be Your Best';
+const description =
+  'Rafael, e o motivo deste projeto existir. Disciplina, ambição e presença de família no mesmo lugar, sem motivação vazia.';
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="container sobre">
+    <div class="sobre__grid">
+      <PhotoSlot register="humano" ratio="4 / 5" label="Retrato — Registro Humano" />
+
+      <div class="sobre__copy">
+        <Eyebrow>Sobre</Eyebrow>
+        <h1>Rafael, e o motivo deste projeto existir</h1>
+
+        <p class="sobre__intro">
+          Levei anos no piloto automático antes de entender que disciplina não é castigo: é a
+          forma mais direta de cuidar de quem você quer ser. Hoje construo isso todos os dias,
+          com trabalho, treino e família no mesmo lugar. Aqui não tem motivação vazia nem
+          promessa de sete dias — tem uma ideia por semana, testada na minha própria rotina, com
+          uma ação para você aplicar hoje.
+        </p>
+
+        <div class="tabs">
+          {abas.map((aba, i) => (
+            <input type="radio" name="sobre-tab" id={`tab-${aba.id}`} class="tabs__radio" checked={i === 0} />
+          ))}
+          <div class="tabs__list" role="tablist" aria-label="Sobre o projeto">
+            {abas.map((aba) => (
+              <label for={`tab-${aba.id}`} class="tabs__tab">{aba.label}</label>
+            ))}
+          </div>
+          {abas.map((aba) => (
+            <div class="tabs__panel" data-panel={aba.id}>
+              <h3>{aba.titulo}</h3>
+              <p>{aba.texto}</p>
+            </div>
+          ))}
+        </div>
+
+        <div class="sobre__badges">
+          <Badge tone="execucao">Execução</Badge>
+          <Badge tone="humano">Humano</Badge>
+        </div>
+
+        <div class="sobre__numeros">
+          {numeros.map(([n, l]) => (
+            <Card tone="flat" padding="var(--space-4)">
+              <div class="sobre__numero-n">{n}</div>
+              <div class="sobre__numero-l">{l}</div>
+            </Card>
+          ))}
+        </div>
+
+        <Button data-newsletter-open>Receber o e-mail semanal</Button>
+      </div>
+    </div>
+  </main>
+
+  <NewsletterBand />
+</BaseLayout>
+
+<style>
+  .sobre { padding-block: var(--space-9); }
+  .sobre__grid {
+    display: grid;
+    gap: var(--space-8);
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .sobre__grid { grid-template-columns: 0.9fr 1.1fr; }
+  }
+  .sobre__copy { display: flex; flex-direction: column; gap: var(--space-5); }
+  .sobre__copy h1 {
+    font-size: var(--text-h1);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-semibold);
+    text-wrap: pretty;
+  }
+  .sobre__intro {
+    font-size: var(--text-body);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    max-width: var(--measure-text);
+    margin: 0;
+  }
+
+  .tabs { display: flex; flex-direction: column; gap: var(--space-4); }
+  .tabs__radio { position: absolute; opacity: 0; pointer-events: none; }
+  .tabs__list { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+  .tabs__tab {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 var(--space-3);
+    border-radius: var(--radius-pill);
+    font-size: var(--text-small);
+    font-weight: var(--weight-medium);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-default);
+    cursor: pointer;
+  }
+  .tabs__panel { display: none; }
+  .tabs__panel h3 {
+    font-size: var(--text-h3);
+    font-weight: var(--weight-medium);
+    letter-spacing: var(--tracking-heading);
+    margin: 0 0 var(--space-2);
+  }
+  .tabs__panel p {
+    color: var(--text-secondary);
+    max-width: var(--measure-text);
+    margin: 0;
+  }
+  #tab-proposta:checked ~ .tabs__list label[for='tab-proposta'],
+  #tab-metodo:checked ~ .tabs__list label[for='tab-metodo'],
+  #tab-valores:checked ~ .tabs__list label[for='tab-valores'] {
+    border-color: var(--border-accent);
+    background: var(--surface-accent-soft);
+    color: var(--text-primary);
+  }
+  #tab-proposta:checked ~ [data-panel='proposta'],
+  #tab-metodo:checked ~ [data-panel='metodo'],
+  #tab-valores:checked ~ [data-panel='valores'] {
+    display: block;
+  }
+
+  .sobre__badges { display: flex; gap: var(--space-2); }
+
+  .sobre__numeros {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+  }
+  .sobre__numero-n {
+    font-family: var(--font-display);
+    font-size: var(--text-h2);
+    font-weight: 600;
+    color: var(--color-verde-areia);
+  }
+  .sobre__numero-l { font-size: var(--text-caption); color: var(--text-muted); }
+</style>

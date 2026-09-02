@@ -1,0 +1,50 @@
+---
+// SVGs importados como URL (Astro não passa vetores pelo pipeline de otimização de raster).
+import wordmarkSrc from '../assets/logo-svg/wordmark-fundo-escuro.svg?url';
+import wordmarkPlainSrc from '../assets/logo-svg/wordmark-plain-fundo-escuro.svg?url';
+import symbolSrc from '../assets/logo-svg/ICONE_1.svg?url';
+
+interface Props {
+  mark?: 'wordmark' | 'symbol';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
+  tagline?: boolean;
+  class?: string;
+}
+
+const { mark = 'wordmark', size = 'md', tagline = true, class: className } = Astro.props;
+
+const HEIGHTS = {
+  wordmark: { sm: 52, md: 66, lg: 92, xl: 136 },
+  'wordmark-plain': { sm: 20, md: 28, lg: 44, xl: 72 },
+  symbol: { sm: 24, md: 34, lg: 54, xl: 88 },
+} as const;
+
+// Proporção (largura/altura) de cada SVG, calculada a partir do viewBox de cada arquivo.
+const RATIOS = {
+  wordmark: 1250 / 320,
+  'wordmark-plain': 1250 / 200,
+  symbol: 666 / 618,
+} as const;
+
+const kind = mark === 'wordmark' && !tagline ? 'wordmark-plain' : mark;
+const src = kind === 'symbol' ? symbolSrc : kind === 'wordmark-plain' ? wordmarkPlainSrc : wordmarkSrc;
+const height = HEIGHTS[kind][size];
+const width = Math.round(height * RATIOS[kind]);
+---
+
+<img
+  src={src}
+  alt="Rafa Byb — Be Your Best"
+  width={width}
+  height={height}
+  class={`wordmark ${className ?? ''}`}
+/>
+
+<style>
+  .wordmark {
+    display: block;
+    align-self: flex-start;
+    flex-shrink: 0;
+    object-fit: contain;
+  }
+</style>

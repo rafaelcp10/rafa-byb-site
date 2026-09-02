@@ -1,0 +1,44 @@
+---
+interface Props {
+  tone?: 'default' | 'flat' | 'accent';
+  interactive?: boolean;
+  padding?: string;
+  href?: string;
+  class?: string;
+}
+
+const { tone = 'default', interactive = false, padding = 'var(--space-5)', href, class: className } = Astro.props;
+const Tag = href ? 'a' : 'div';
+---
+
+<Tag
+  href={href}
+  class:list={['card', `card--${tone}`, { 'card--interactive': interactive || href }, className]}
+  style={{ padding }}
+>
+  <slot />
+</Tag>
+
+<style>
+  .card {
+    display: block;
+    border-radius: var(--radius-md);
+    position: relative;
+    text-decoration: none;
+    color: inherit;
+    transition:
+      transform var(--duration-base) var(--ease-standard),
+      border-color var(--duration-base) var(--ease-standard),
+      box-shadow var(--duration-base) var(--ease-standard);
+  }
+  .card--default { background: var(--surface-card); border: 1px solid var(--border-subtle); }
+  .card--flat { background: transparent; border: 1px solid var(--border-default); }
+  .card--accent { background: var(--surface-accent-soft); border: 1px solid var(--border-accent); }
+
+  .card--interactive { cursor: pointer; }
+  .card--interactive:hover {
+    border-color: var(--border-accent);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+  }
+</style>
