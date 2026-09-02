@@ -16,3 +16,6 @@ dist/
 /assets/
 /.thumbnail
 /hf_*.png
+
+# Estado interno da sessão do Claude Code, não é parte do projeto.
+/.claude/scheduled_tasks.lock

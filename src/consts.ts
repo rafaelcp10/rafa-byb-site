@@ -10,6 +10,5 @@ export const AUTHOR_NAME = 'Rafael';
 export const SOCIAL_LINKS = {
   youtube: 'https://www.youtube.com/@Rafabyb',
   instagram: 'https://www.instagram.com/rafa_byb_oficial',
-  // TODO: Rafael ainda vai passar o e-mail de contato definitivo.
-  email: 'mailto:contato@rafabeyourbest.com',
+  email: 'mailto:rafael.piresweb@gmail.com',
 };
