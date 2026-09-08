@@ -1,0 +1,49 @@
+---
+// Quebra o texto em palavras em tempo de build (sem precisar do plugin pago SplitText do GSAP).
+// Cada palavra fica num <span> com overflow:hidden — a palavra de dentro desliza de baixo pra cima
+// no scroll. O texto inteiro já vem visível por padrão; o JS só anima a partir de um estado oculto
+// que ele mesmo aplica (ver motion.css / .js-ready), então sem JS o conteúdo aparece normal.
+interface Props {
+  text: string;
+  as?: 'h1' | 'h2' | 'h3' | 'p' | 'span';
+  class?: string;
+}
+
+const { text, as: Tag = 'span', class: className }: Props = Astro.props;
+const words = text.split(' ');
+---
+
+<Tag class:list={['reveal-text', className]} data-reveal-text>
+  {words.map((word, i) => (
+    <span class="reveal-text__mask">
+      <span class="reveal-text__word">{word}{i < words.length - 1 ? ' ' : ''}</span>
+    </span>
+  ))}
+</Tag>
+
+<style>
+  .reveal-text {
+    display: block;
+  }
+  .reveal-text__mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: 0.12em;
+    margin-bottom: -0.12em;
+  }
+  .reveal-text__word {
+    display: inline-block;
+    will-change: transform;
+  }
+
+  html.js-ready .reveal-text__word {
+    transform: translateY(110%);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html.js-ready .reveal-text__word {
+      transform: none;
+    }
+  }
+</style>

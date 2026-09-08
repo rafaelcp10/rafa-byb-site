@@ -8,7 +8,8 @@ import Tag from '../components/Tag.astro';
 import ArticleCard from '../components/ArticleCard.astro';
 import PhotoSlot from '../components/PhotoSlot.astro';
 import NewsletterBand from '../components/NewsletterBand.astro';
-import heroImg from '../assets/site/hero-montanha.png';
+import RevealText from '../components/RevealText.astro';
+import heroImg from '../assets/site/hero-cinematic.png';
 import { CATEGORIA_LIST } from '../data/categorias';
 import { SITE_DESCRIPTION } from '../consts';
 
@@ -34,29 +35,47 @@ const metaDestaque = destaque
 
 <BaseLayout title="Rafa Byb — Be Your Best" description={SITE_DESCRIPTION}>
   <main>
-    <section class="hero">
-      <Image src={heroImg} alt="Montanha ao amanhecer" class="hero__img" widths={[640, 1000, 1600, 2000]} sizes="100vw" priority />
-      <div class="hero__gradient"></div>
-      <div class="container hero__inner">
-        <div class="hero__eyebrow-title">
+    <section class="hero" data-hero>
+      <div class="hero__stage" data-hero-stage>
+        <Image
+          src={heroImg}
+          alt="Pico de montanha ao amanhecer, emergindo de um mar de névoa"
+          class="hero__img"
+          data-hero-img
+          widths={[900, 1400, 1920, 2560]}
+          sizes="100vw"
+          priority
+        />
+        <div class="hero__grain grain-overlay"></div>
+        <div class="hero__gradient"></div>
+        <div class="hero__vignette"></div>
+      </div>
+
+      <div class="container hero__content" data-hero-content>
+        <div class="hero__top">
           <Eyebrow>Um conteúdo por semana</Eyebrow>
-          <h1>Você não precisa se tornar outra pessoa.</h1>
         </div>
-        <p class="hero__lede">
+        <RevealText as="h1" text="Você não precisa se tornar outra pessoa." class="hero__title" />
+        <p class="hero__lede" data-reveal-fade>
           Precisa construir, todos os dias, a melhor versão de si mesmo. Aqui ficam os vídeos em
           texto: uma ideia, uma perspectiva e uma ação para aplicar hoje.
         </p>
       </div>
+
+      <div class="hero__scrollcue" data-reveal-fade>
+        <span class="hero__scrollcue-line"></span>
+        <span class="hero__scrollcue-label">Role para continuar</span>
+      </div>
     </section>
 
     {destaque && (
-      <section class="container destaque">
-        <div class="destaque__label">
+      <section class="container destaque" data-reveal-section>
+        <div class="destaque__label" data-reveal-fade>
           <span>Último conteúdo</span>
           <span class="destaque__data">{dataFormatada}</span>
         </div>
         <a href={`/artigos/${destaque.data.slug}`} class="destaque__grid">
-          <div class="destaque__media">
+          <div class="destaque__media" data-parallax-media>
             <Image
               src={destaque.data.imagem_capa}
               alt={destaque.data.titulo}
@@ -64,9 +83,10 @@ const metaDestaque = destaque
               height={360}
               widths={[360, 480, 640]}
               sizes="(min-width: 900px) 50vw, 100vw"
+              data-parallax-img
             />
           </div>
-          <div class="destaque__copy">
+          <div class="destaque__copy" data-reveal-up>
             <div class="destaque__meta">
               <Badge tone={destaque.data.registro}>{registroLabelDestaque}</Badge>
               <span class="destaque__meta-text">{metaDestaque}</span>
@@ -79,8 +99,8 @@ const metaDestaque = destaque
       </section>
     )}
 
-    <section class="container artigos" id="artigos">
-      <div class="artigos__head">
+    <section class="container artigos" id="artigos" data-reveal-section>
+      <div class="artigos__head" data-reveal-up>
         <h2>Artigos</h2>
         <div class="artigos__filtros" data-filtros>
           <Tag active data-filtro="todos">Todos</Tag>
@@ -91,11 +111,11 @@ const metaDestaque = destaque
       </div>
 
       {resto.length === 0 ? (
-        <p class="artigos__vazio">Mais artigos chegam nas próximas semanas.</p>
+        <p class="artigos__vazio" data-reveal-up>Mais artigos chegam nas próximas semanas.</p>
       ) : (
         <div class="artigos__grid" data-grid>
           {resto.map((a) => (
-            <div data-categoria={a.data.categoria}>
+            <div data-categoria={a.data.categoria} data-reveal-card>
               <ArticleCard artigo={a} />
             </div>
           ))}
@@ -103,12 +123,12 @@ const metaDestaque = destaque
       )}
     </section>
 
-    <section class="container sobre-teaser">
+    <section class="container sobre-teaser" data-reveal-section>
       <div class="sobre-teaser__grid">
-        <div class="sobre-teaser__photo">
+        <div class="sobre-teaser__photo" data-parallax-media>
           <PhotoSlot register="humano" ratio="1 / 1" label="Foto do Rafael" />
         </div>
-        <div class="sobre-teaser__copy">
+        <div class="sobre-teaser__copy" data-reveal-up>
           <Eyebrow>Quem escreve</Eyebrow>
           <h2>Eu sou Rafael.</h2>
           <p>
@@ -125,7 +145,9 @@ const metaDestaque = destaque
       </div>
     </section>
 
-    <NewsletterBand />
+    <div data-reveal-section>
+      <NewsletterBand />
+    </div>
   </main>
 </BaseLayout>
 
@@ -148,11 +170,148 @@ const metaDestaque = destaque
   });
 </script>
 
+<script>
+  import Lenis from 'lenis';
+  import { gsap } from 'gsap';
+  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+  // O navegador pode restaurar a posição de scroll de uma sessão anterior antes deste
+  // script rodar — isso desalinha o pin do hero (calculado assumindo scrollY:0) com a
+  // posição real. Força início do topo e desliga a restauração automática.
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+  window.scrollTo(0, 0);
+
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (!prefersReduced) {
+    document.documentElement.classList.add('js-ready');
+    gsap.registerPlugin(ScrollTrigger);
+
+    // Scroll suavizado (Lenis), sincronizado com o ticker do GSAP pra ScrollTrigger
+    // ler a posição correta — receita padrão da documentação do GSAP+Lenis.
+    const lenis = new Lenis();
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
+
+    // --- Hero: revela o título palavra por palavra ao carregar ---
+    const heroWords = document.querySelectorAll('[data-hero] .reveal-text__word');
+
+    // O lede fica visível desde o primeiro frame (é o candidato a LCP da página —
+    // escondê-lo atrás de uma animação atrasaria essa métrica real). Só o scrollcue,
+    // puramente decorativo, entra com fade.
+    const heroFadeIns = [document.querySelector('.hero__scrollcue')];
+    gsap.set(heroFadeIns, { autoAlpha: 0, y: 16 });
+
+    const introTl = gsap.timeline({ delay: 0.15 });
+    introTl
+      .to(heroWords, {
+        y: 0,
+        duration: 1.1,
+        ease: 'expo.out',
+        stagger: 0.06,
+      })
+      .to(
+        heroFadeIns,
+        { autoAlpha: 1, y: 0, duration: 0.8, ease: 'power2.out', stagger: 0.1 },
+        '-=0.6'
+      );
+
+    // --- Hero: pin + parallax + fade enquanto rola ---
+    gsap.timeline({
+      scrollTrigger: {
+        trigger: '[data-hero]',
+        start: 'top top',
+        end: '+=85%',
+        pin: true,
+        scrub: 0.6,
+      },
+    })
+      .to('[data-hero-img]', { scale: 1.18, ease: 'none' }, 0)
+      .to('[data-hero-content]', { autoAlpha: 0, y: -80, ease: 'none' }, 0)
+      .to('.hero__scrollcue', { autoAlpha: 0, ease: 'none' }, 0);
+
+    // --- Reveals genéricos: fade + sobe, ao entrar na tela ---
+    gsap.utils.toArray<HTMLElement>('[data-reveal-up]').forEach((el) => {
+      gsap.fromTo(
+        el,
+        { autoAlpha: 0, y: 32 },
+        {
+          autoAlpha: 1,
+          y: 0,
+          duration: 0.9,
+          ease: 'power3.out',
+          scrollTrigger: { trigger: el, start: 'top 85%' },
+        }
+      );
+    });
+
+    gsap.utils.toArray<HTMLElement>('[data-reveal-fade]:not([data-hero] *)').forEach((el) => {
+      gsap.fromTo(
+        el,
+        { autoAlpha: 0 },
+        {
+          autoAlpha: 1,
+          duration: 0.9,
+          ease: 'power2.out',
+          scrollTrigger: { trigger: el, start: 'top 90%' },
+        }
+      );
+    });
+
+    // --- Cards de artigo: reveal escalonado ---
+    const cards = gsap.utils.toArray<HTMLElement>('[data-reveal-card]');
+    if (cards.length) {
+      ScrollTrigger.batch(cards, {
+        start: 'top 88%',
+        onEnter: (batch) =>
+          gsap.fromTo(
+            batch,
+            { autoAlpha: 0, y: 28 },
+            { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.1 }
+          ),
+        once: true,
+      });
+    }
+
+    // --- Parallax leve em imagens de mídia (destaque, foto do Rafael) ---
+    gsap.utils.toArray<HTMLElement>('[data-parallax-media]').forEach((wrap) => {
+      const target = wrap.querySelector<HTMLElement>('[data-parallax-img]') || wrap.firstElementChild;
+      if (!target) return;
+      gsap.fromTo(
+        target,
+        { yPercent: -8 },
+        {
+          yPercent: 8,
+          ease: 'none',
+          scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: true },
+        }
+      );
+    });
+
+    // Imagens (hero incluso) podem terminar de carregar depois do cálculo inicial do
+    // ScrollTrigger, mudando a altura real do documento — recalcula quando tudo carregar.
+    window.addEventListener('load', () => ScrollTrigger.refresh());
+  }
+</script>
+
 <style>
+  /* ---- Hero cinematográfico ---- */
   .hero {
     position: relative;
+    height: 100svh;
+    min-height: 560px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
     isolation: isolate;
     overflow: hidden;
+    background: var(--color-chumbo-950);
+  }
+  .hero__stage {
+    position: absolute;
+    inset: 0;
+    z-index: var(--layer-bg);
   }
   .hero__img {
     position: absolute;
@@ -160,44 +319,79 @@ const metaDestaque = destaque
     width: 100%;
     height: 100%;
     object-fit: cover;
-    z-index: -2;
+    will-change: transform;
   }
   .hero__gradient {
     position: absolute;
     inset: 0;
-    background: var(--protection-gradient);
-    z-index: -1;
+    z-index: var(--layer-mist);
+    background: linear-gradient(
+      to top,
+      var(--color-chumbo-950) 0%,
+      rgba(10, 10, 12, 0.85) 22%,
+      rgba(10, 10, 12, 0.25) 52%,
+      rgba(10, 10, 12, 0.05) 75%
+    );
   }
-  .hero__inner {
-    padding-block: var(--space-9) var(--space-8);
-    display: grid;
-    gap: var(--space-8);
-    align-items: end;
+  .hero__vignette {
+    position: absolute;
+    inset: 0;
+    z-index: var(--layer-mist);
+    box-shadow: inset 0 0 min(22vw, 260px) rgba(0, 0, 0, 0.65);
   }
-  .hero__eyebrow-title {
+  .hero__content {
+    position: relative;
+    z-index: var(--layer-content);
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
+    padding-bottom: var(--space-9);
   }
-  .hero__eyebrow-title h1 {
-    font-size: clamp(2.5rem, 6vw, var(--text-display));
-    line-height: var(--leading-tight);
-    letter-spacing: var(--tracking-display);
+  .hero__top { display: flex; }
+  .hero__title {
+    font-family: var(--font-display);
+    font-size: clamp(2.75rem, 8vw, 6.5rem);
+    line-height: 0.98;
+    letter-spacing: -0.02em;
     font-weight: var(--weight-semibold);
-    text-wrap: pretty;
+    color: var(--color-off-white);
+    max-width: 16ch;
+    text-wrap: balance;
   }
   .hero__lede {
     font-size: var(--text-body-lg);
     line-height: var(--leading-relaxed);
     color: var(--text-secondary);
-    max-width: 42ch;
-    margin: 0;
+    max-width: 46ch;
+    margin: var(--space-2) 0 0;
+  }
+  .hero__scrollcue {
+    position: absolute;
+    left: var(--gutter-page);
+    bottom: var(--space-5);
+    z-index: var(--layer-content);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
   }
   @media (min-width: 900px) {
-    .hero__inner { grid-template-columns: 1.2fr 0.8fr; }
+    .hero__scrollcue { left: var(--gutter-page-lg); }
+  }
+  .hero__scrollcue-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--color-oliva), transparent);
+  }
+  .hero__scrollcue-label {
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--alpha-off-white-64);
+    writing-mode: vertical-rl;
   }
 
-  .destaque { padding-top: var(--space-5); }
+  /* ---- Seções seguintes: mesma base, com respiro maior ---- */
+  .destaque { padding-top: var(--space-9); }
   .destaque__label {
     display: flex;
     align-items: baseline;
@@ -216,7 +410,7 @@ const metaDestaque = destaque
     display: grid;
     gap: var(--space-7);
     align-items: center;
-    padding-bottom: var(--space-8);
+    padding-bottom: var(--space-9);
     text-decoration: none;
     color: inherit;
   }
@@ -225,13 +419,19 @@ const metaDestaque = destaque
     overflow: hidden;
     border: 1px solid var(--border-subtle);
     aspect-ratio: 16 / 9;
+    isolation: isolate;
   }
-  .destaque__media :global(img) { width: 100%; height: 100%; object-fit: cover; }
+  .destaque__media :global(img) {
+    width: 100%;
+    height: 130%;
+    object-fit: cover;
+    display: block;
+  }
   .destaque__copy { display: flex; flex-direction: column; gap: var(--space-4); }
   .destaque__meta { display: flex; align-items: center; gap: var(--space-3); }
   .destaque__meta-text { font-size: var(--text-caption); color: var(--text-muted); }
   .destaque__copy h2 {
-    font-size: var(--text-h1);
+    font-size: clamp(var(--text-h2), 3.6vw, 3.4rem);
     line-height: var(--leading-snug);
     letter-spacing: var(--tracking-heading);
     font-weight: var(--weight-semibold);
@@ -255,6 +455,7 @@ const metaDestaque = destaque
     .destaque__grid { grid-template-columns: 1.05fr 0.95fr; }
   }
 
+  .artigos { padding-top: var(--space-6); }
   .artigos__head {
     display: flex;
     align-items: baseline;
@@ -265,7 +466,7 @@ const metaDestaque = destaque
     padding: var(--space-6) 0 var(--space-5);
   }
   .artigos__head h2 {
-    font-size: var(--text-h2);
+    font-size: clamp(var(--text-h2), 3vw, 2.75rem);
     letter-spacing: var(--tracking-heading);
     font-weight: var(--weight-medium);
   }
@@ -285,15 +486,19 @@ const metaDestaque = destaque
   .sobre-teaser { padding-top: var(--space-9); }
   .sobre-teaser__grid {
     border-top: 1px solid var(--border-subtle);
-    padding-block: var(--space-8);
+    padding-block: var(--space-9);
     display: grid;
     gap: var(--space-8);
     align-items: center;
   }
-  .sobre-teaser__photo { max-width: 280px; }
+  .sobre-teaser__photo {
+    max-width: 320px;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+  }
   .sobre-teaser__copy { display: flex; flex-direction: column; gap: var(--space-4); }
   .sobre-teaser__copy h2 {
-    font-size: var(--text-h2);
+    font-size: clamp(var(--text-h2), 3.4vw, 3.2rem);
     letter-spacing: var(--tracking-heading);
     font-weight: var(--weight-medium);
     text-wrap: pretty;
@@ -314,6 +519,6 @@ const metaDestaque = destaque
     text-decoration: none;
   }
   @media (min-width: 900px) {
-    .sobre-teaser__grid { grid-template-columns: 280px minmax(0, 1fr); }
+    .sobre-teaser__grid { grid-template-columns: 320px minmax(0, 1fr); }
   }
 </style>

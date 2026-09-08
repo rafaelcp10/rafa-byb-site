@@ -3,6 +3,7 @@
 @import "./tokens-spacing.css";
 @import "./tokens-effects.css";
 @import "./tokens-base.css";
+@import "./motion.css";
 
 *, *::before, *::after { box-sizing: border-box; }
 

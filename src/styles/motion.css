@@ -1,0 +1,45 @@
+/* Tokens de movimento e profundidade — usados pelas seções com animação de scroll (GSAP/Lenis).
+   Escala de duração pensada para scrub/reveal (mais longa que os tokens de UI em tokens-effects.css,
+   que são para hover/click). */
+
+:root {
+  --ease-premium: cubic-bezier(0.16, 1, 0.3, 1); /* expo-out suave, usado em quase todo reveal */
+  --ease-premium-in: cubic-bezier(0.7, 0, 0.84, 0);
+
+  --duration-reveal: 900ms;
+  --duration-reveal-slow: 1400ms;
+
+  /* Escala de camadas (z-index) para composição em profundidade dentro de uma seção pinada. */
+  --layer-bg: 0;
+  --layer-mist: 1;
+  --layer-grain: 2;
+  --layer-content: 3;
+  --layer-float: 4;
+}
+
+/* Ruído/grão sutil via SVG inline — sem custo de rede, sem imagem extra.
+   Aplicar em um elemento posicionado absolutamente cobrindo a seção. */
+.grain-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: var(--layer-grain);
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* Estado inicial de um bloco "revela no scroll": visível por padrão (progressive enhancement).
+   O JS marca .js-ready no <html> assim que o GSAP inicializa — só então o CSS aplica o estado
+   oculto de partida, para nunca depender da animação para o conteúdo aparecer. */
+html.js-ready .reveal-up {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.js-ready .reveal-up {
+    opacity: 1;
+    transform: none;
+  }
+}
