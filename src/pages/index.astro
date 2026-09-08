@@ -171,28 +171,12 @@ const metaDestaque = destaque
 </script>
 
 <script>
-  import Lenis from 'lenis';
-  import { gsap } from 'gsap';
-  import { ScrollTrigger } from 'gsap/ScrollTrigger';
+  import { initScrollMotion } from '../scripts/scroll-motion';
 
-  // O navegador pode restaurar a posição de scroll de uma sessão anterior antes deste
-  // script rodar — isso desalinha o pin do hero (calculado assumindo scrollY:0) com a
-  // posição real. Força início do topo e desliga a restauração automática.
-  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
-  window.scrollTo(0, 0);
+  const motion = initScrollMotion();
 
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-  if (!prefersReduced) {
-    document.documentElement.classList.add('js-ready');
-    gsap.registerPlugin(ScrollTrigger);
-
-    // Scroll suavizado (Lenis), sincronizado com o ticker do GSAP pra ScrollTrigger
-    // ler a posição correta — receita padrão da documentação do GSAP+Lenis.
-    const lenis = new Lenis();
-    lenis.on('scroll', ScrollTrigger.update);
-    gsap.ticker.add((time) => lenis.raf(time * 1000));
-    gsap.ticker.lagSmoothing(0);
+  if (motion) {
+    const { gsap } = motion;
 
     // --- Hero: revela o título palavra por palavra ao carregar ---
     const heroWords = document.querySelectorAll('[data-hero] .reveal-text__word');
@@ -230,68 +214,6 @@ const metaDestaque = destaque
       .to('[data-hero-img]', { scale: 1.18, ease: 'none' }, 0)
       .to('[data-hero-content]', { autoAlpha: 0, y: -80, ease: 'none' }, 0)
       .to('.hero__scrollcue', { autoAlpha: 0, ease: 'none' }, 0);
-
-    // --- Reveals genéricos: fade + sobe, ao entrar na tela ---
-    gsap.utils.toArray<HTMLElement>('[data-reveal-up]').forEach((el) => {
-      gsap.fromTo(
-        el,
-        { autoAlpha: 0, y: 32 },
-        {
-          autoAlpha: 1,
-          y: 0,
-          duration: 0.9,
-          ease: 'power3.out',
-          scrollTrigger: { trigger: el, start: 'top 85%' },
-        }
-      );
-    });
-
-    gsap.utils.toArray<HTMLElement>('[data-reveal-fade]:not([data-hero] *)').forEach((el) => {
-      gsap.fromTo(
-        el,
-        { autoAlpha: 0 },
-        {
-          autoAlpha: 1,
-          duration: 0.9,
-          ease: 'power2.out',
-          scrollTrigger: { trigger: el, start: 'top 90%' },
-        }
-      );
-    });
-
-    // --- Cards de artigo: reveal escalonado ---
-    const cards = gsap.utils.toArray<HTMLElement>('[data-reveal-card]');
-    if (cards.length) {
-      ScrollTrigger.batch(cards, {
-        start: 'top 88%',
-        onEnter: (batch) =>
-          gsap.fromTo(
-            batch,
-            { autoAlpha: 0, y: 28 },
-            { autoAlpha: 1, y: 0, duration: 0.7, ease: 'power3.out', stagger: 0.1 }
-          ),
-        once: true,
-      });
-    }
-
-    // --- Parallax leve em imagens de mídia (destaque, foto do Rafael) ---
-    gsap.utils.toArray<HTMLElement>('[data-parallax-media]').forEach((wrap) => {
-      const target = wrap.querySelector<HTMLElement>('[data-parallax-img]') || wrap.firstElementChild;
-      if (!target) return;
-      gsap.fromTo(
-        target,
-        { yPercent: -8 },
-        {
-          yPercent: 8,
-          ease: 'none',
-          scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: true },
-        }
-      );
-    });
-
-    // Imagens (hero incluso) podem terminar de carregar depois do cálculo inicial do
-    // ScrollTrigger, mudando a altura real do documento — recalcula quando tudo carregar.
-    window.addEventListener('load', () => ScrollTrigger.refresh());
   }
 </script>
 

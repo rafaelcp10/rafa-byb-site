@@ -45,7 +45,9 @@ const description =
 <BaseLayout title={title} description={description}>
   <main class="container sobre">
     <div class="sobre__grid">
-      <PhotoSlot register="humano" ratio="4 / 5" label="Retrato — Registro Humano" />
+      <div data-parallax-media>
+        <PhotoSlot register="humano" ratio="4 / 5" label="Retrato — Registro Humano" />
+      </div>
 
       <div class="sobre__copy">
         <Eyebrow>Sobre</Eyebrow>
@@ -59,7 +61,7 @@ const description =
           uma ação para você aplicar hoje.
         </p>
 
-        <div class="tabs">
+        <div class="tabs" data-reveal-up>
           {abas.map((aba, i) => (
             <input type="radio" name="sobre-tab" id={`tab-${aba.id}`} class="tabs__radio" checked={i === 0} />
           ))}
@@ -76,27 +78,34 @@ const description =
           ))}
         </div>
 
-        <div class="sobre__badges">
+        <div class="sobre__badges" data-reveal-fade>
           <Badge tone="execucao">Execução</Badge>
           <Badge tone="humano">Humano</Badge>
         </div>
 
         <div class="sobre__numeros">
           {numeros.map(([n, l]) => (
-            <Card tone="flat" padding="var(--space-4)">
-              <div class="sobre__numero-n">{n}</div>
-              <div class="sobre__numero-l">{l}</div>
-            </Card>
+            <div data-reveal-card>
+              <Card tone="flat" padding="var(--space-4)">
+                <div class="sobre__numero-n">{n}</div>
+                <div class="sobre__numero-l">{l}</div>
+              </Card>
+            </div>
           ))}
         </div>
 
-        <Button data-newsletter-open>Receber o e-mail semanal</Button>
+        <div data-reveal-up><Button data-newsletter-open>Receber o e-mail semanal</Button></div>
       </div>
     </div>
   </main>
 
   <NewsletterBand />
 </BaseLayout>
+
+<script>
+  import { initScrollMotion } from '../scripts/scroll-motion';
+  initScrollMotion();
+</script>
 
 <style>
   .sobre { padding-block: var(--space-9); }

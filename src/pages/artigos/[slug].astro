@@ -96,7 +96,7 @@ const jsonLd = {
         <p class="artigo-corpo__lede">{artigo.data.resumo}</p>
         <Content />
 
-        <div class="article-page__cta">
+        <div class="article-page__cta" data-reveal-up>
           <p>Recebe o próximo antes de ir ao ar, com o que ficou de fora da edição.</p>
           <Button data-newsletter-open>Receber o e-mail semanal</Button>
         </div>
@@ -107,7 +107,11 @@ const jsonLd = {
       <section class="article-page__relacionados">
         <h2>Continue lendo</h2>
         <div class="article-page__relacionados-grid">
-          {relacionados.map((a) => <ArticleCard artigo={a} />)}
+          {relacionados.map((a) => (
+            <div data-reveal-card>
+              <ArticleCard artigo={a} />
+            </div>
+          ))}
         </div>
       </section>
     )}

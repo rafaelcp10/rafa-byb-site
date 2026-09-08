@@ -24,36 +24,43 @@ const description =
           Sem frase motivacional solta. Você recebe o problema, a perspectiva e o que fazer com
           isso na semana seguinte.
         </p>
-        <QuoteBlock quote="Conhecimento sem aplicação é entretenimento." />
+        <div data-reveal-up><QuoteBlock quote="Conhecimento sem aplicação é entretenimento." /></div>
       </div>
 
-      <Card padding="var(--space-6)" class="newsletter-page__form-card">
-        <form id="newsletter-page-form" class="newsletter-page__form" data-newsletter-form>
-          <Field label="E-mail" htmlFor="nl-page-email" hint="Você pode sair a qualquer momento.">
-            <Input id="nl-page-email" name="email" type="email" placeholder="voce@email.com" required />
-          </Field>
+      <div>
+        <Card padding="var(--space-6)" class="newsletter-page__form-card">
+          <form id="newsletter-page-form" class="newsletter-page__form" data-newsletter-form>
+            <Field label="E-mail" htmlFor="nl-page-email" hint="Você pode sair a qualquer momento.">
+              <Input id="nl-page-email" name="email" type="email" placeholder="voce@email.com" required />
+            </Field>
 
-          <Field label="Que tipo de conteúdo pesa mais para você?">
-            <div class="newsletter-page__radios">
-              <Radio id="reg-execucao" name="registro" value="execucao" label="Execução — disciplina, produtividade, carreira" />
-              <Radio id="reg-humano" name="registro" value="humano" label="Humano — rotina, família, saúde" />
-              <Radio id="reg-ambos" name="registro" value="ambos" checked label="Os dois" />
-            </div>
-          </Field>
+            <Field label="Que tipo de conteúdo pesa mais para você?">
+              <div class="newsletter-page__radios">
+                <Radio id="reg-execucao" name="registro" value="execucao" label="Execução — disciplina, produtividade, carreira" />
+                <Radio id="reg-humano" name="registro" value="humano" label="Humano — rotina, família, saúde" />
+                <Radio id="reg-ambos" name="registro" value="ambos" checked label="Os dois" />
+              </div>
+            </Field>
 
-          <Checkbox id="nl-consent" name="consent" required label="Concordo em receber um e-mail por semana" />
+            <Checkbox id="nl-consent" name="consent" required label="Concordo em receber um e-mail por semana" />
 
-          <Button type="submit" full size="lg" data-newsletter-submit>Quero receber</Button>
+            <Button type="submit" full size="lg" data-newsletter-submit>Quero receber</Button>
 
-          <p class="newsletter-page__success" data-newsletter-success hidden>
-            Inscrição confirmada. Confira sua caixa de entrada.
-          </p>
-          <p class="newsletter-page__error" data-newsletter-error hidden></p>
-        </form>
-      </Card>
+            <p class="newsletter-page__success" data-newsletter-success hidden>
+              Inscrição confirmada. Confira sua caixa de entrada.
+            </p>
+            <p class="newsletter-page__error" data-newsletter-error hidden></p>
+          </form>
+        </Card>
+      </div>
     </div>
   </main>
 </BaseLayout>
+
+<script>
+  import { initScrollMotion } from '../scripts/scroll-motion';
+  initScrollMotion();
+</script>
 
 <script>
   // Integração real com POST /api/newsletter (ver src/pages/api/newsletter.ts e src/lib/kit.ts).
