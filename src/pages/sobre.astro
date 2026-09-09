@@ -1,11 +1,12 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Badge from '../components/Badge.astro';
 import Card from '../components/Card.astro';
 import Button from '../components/Button.astro';
-import PhotoSlot from '../components/PhotoSlot.astro';
 import NewsletterBand from '../components/NewsletterBand.astro';
+import fotoRafael from '../assets/site/foto4.png';
 
 const abas = [
   {
@@ -45,8 +46,17 @@ const description =
 <BaseLayout title={title} description={description}>
   <main class="container sobre">
     <div class="sobre__grid">
-      <div data-parallax-media>
-        <PhotoSlot register="humano" ratio="4 / 5" label="Retrato — Registro Humano" />
+      <div class="sobre__photo" data-parallax-media>
+        <Image
+          src={fotoRafael}
+          alt="Retrato de Rafael"
+          width={900}
+          height={900}
+          widths={[480, 700, 900]}
+          sizes="(min-width: 900px) 45vw, 90vw"
+          data-parallax-img
+          priority
+        />
       </div>
 
       <div class="sobre__copy">
@@ -116,6 +126,18 @@ const description =
   }
   @media (min-width: 900px) {
     .sobre__grid { grid-template-columns: 0.9fr 1.1fr; }
+  }
+  .sobre__photo {
+    aspect-ratio: 4 / 5;
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+  }
+  .sobre__photo :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
   }
   .sobre__copy { display: flex; flex-direction: column; gap: var(--space-5); }
   .sobre__copy h1 {
