@@ -55,10 +55,13 @@ export function initScrollMotion() {
   gsap.utils.toArray<HTMLElement>('[data-parallax-media]').forEach((wrap) => {
     const target = wrap.querySelector<HTMLElement>('[data-parallax-img]') || (wrap.firstElementChild as HTMLElement | null);
     if (!target) return;
+    // A imagem preenche o quadro exatamente; sem esse zoom, o deslocamento do parallax
+    // deixaria uma faixa vazia numa borda e cortaria a outra.
+    gsap.set(target, { scale: 1.18 });
     gsap.fromTo(
       target,
-      { yPercent: -8 },
-      { yPercent: 8, ease: 'none', scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: true } }
+      { yPercent: -5 },
+      { yPercent: 5, ease: 'none', scrollTrigger: { trigger: wrap, start: 'top bottom', end: 'bottom top', scrub: true } }
     );
   });
 

@@ -9,7 +9,8 @@ const isHome = path === '/';
 <header class="site-header">
   <div class="container site-header__inner">
     <a href="/" class="site-header__brand" aria-label="Rafa Byb — início">
-      <Wordmark mark="wordmark" tagline={false} size="md" />
+      <span class="site-header__brand-full"><Wordmark mark="wordmark" tagline={false} size="md" /></span>
+      <span class="site-header__brand-symbol"><Wordmark mark="symbol" size="md" /></span>
     </a>
     <nav class="site-header__nav" aria-label="Navegação principal">
       <a href="/" class:list={['site-header__link', { 'site-header__link--active': isHome }]}>Início</a>
@@ -38,6 +39,8 @@ const isHome = path === '/';
     gap: var(--space-7);
   }
   .site-header__brand { display: flex; align-items: center; }
+  .site-header__brand-full { display: flex; }
+  .site-header__brand-symbol { display: none; }
   .site-header__nav {
     display: flex;
     align-items: center;
@@ -72,7 +75,17 @@ const isHome = path === '/';
   }
 
   @media (max-width: 720px) {
+    .site-header__inner { gap: var(--space-4); }
     .site-header__nav { gap: var(--space-4); }
     .site-header__soon { display: none; }
+  }
+
+  /* Abaixo disso o wordmark completo + nav + CTA não cabem na largura da tela:
+     a marca passa a ser só o símbolo, mantendo navegação e CTA visíveis. */
+  @media (max-width: 620px) {
+    .site-header__brand-full { display: none; }
+    .site-header__brand-symbol { display: flex; }
+    .site-header__nav { gap: var(--space-3); }
+    .site-header__link { font-size: var(--text-caption); }
   }
 </style>
