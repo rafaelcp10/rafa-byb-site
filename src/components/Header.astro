@@ -16,7 +16,7 @@ const isHome = path === '/';
       <a href="/" class:list={['site-header__link', { 'site-header__link--active': isHome }]}>Início</a>
       <a href="/#artigos" class="site-header__link">Artigos</a>
       <a href="/sobre" class:list={['site-header__link', { 'site-header__link--active': path === '/sobre' }]}>Sobre</a>
-      <span class="site-header__soon">Produtos<span class="site-header__soon-tag">em breve</span></span>
+      <a href="/21dias" class:list={['site-header__link', { 'site-header__link--active': path === '/21dias' }]}>E-book</a>
     </nav>
     <Button size="sm" data-newsletter-open>Newsletter</Button>
   </div>
@@ -59,25 +59,9 @@ const isHome = path === '/';
     color: var(--text-primary);
     border-bottom-color: var(--color-oliva);
   }
-  .site-header__soon {
-    display: inline-flex;
-    align-items: baseline;
-    gap: var(--space-2);
-    font-size: var(--text-small);
-    color: var(--text-muted);
-    cursor: not-allowed;
-  }
-  .site-header__soon-tag {
-    font-size: 10px;
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
-    color: var(--color-oliva);
-  }
-
   @media (max-width: 720px) {
     .site-header__inner { gap: var(--space-4); }
     .site-header__nav { gap: var(--space-4); }
-    .site-header__soon { display: none; }
   }
 
   /* Abaixo disso o wordmark completo + nav + CTA não cabem na largura da tela:

@@ -1,0 +1,135 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import { SOCIAL_LINKS } from '../consts';
+
+const email = SOCIAL_LINKS.email.replace('mailto:', '');
+const atualizacao = '28 de setembro de 2026';
+
+const title = 'Política de privacidade | Rafa Byb — Be Your Best';
+const description =
+  'Quais dados o site do Rafa Byb coleta, para que são usados, com quem são compartilhados e como pedir a exclusão.';
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="container privacidade">
+    <Eyebrow>Privacidade</Eyebrow>
+    <h1>Política de privacidade</h1>
+    <p class="privacidade__meta">Última atualização: {atualizacao}</p>
+
+    <section>
+      <h2>Quais dados são coletados</h2>
+      <p>
+        Quando você se inscreve na newsletter ou baixa um material gratuito, são coletados o
+        <strong>e-mail</strong> e, quando o formulário pedir, o <strong>nome</strong>. Junto com
+        isso é registrada a <strong>origem da inscrição</strong> (os parâmetros de campanha da URL,
+        como de qual vídeo ou canal você veio), para eu entender quais conteúdos trazem mais gente.
+      </p>
+      <p>
+        A navegação no site também gera dados estatísticos de audiência pelo Google Analytics
+        (páginas visitadas, tempo de leitura, tipo de dispositivo, origem do acesso). São dados
+        agregados, usados para entender o que é útil e o que não é.
+      </p>
+    </section>
+
+    <section>
+      <h2>Para que esses dados são usados</h2>
+      <ul>
+        <li>Enviar a newsletter semanal e os materiais gratuitos que você pediu.</li>
+        <li>Entender quais conteúdos funcionam melhor e melhorar o que é publicado aqui.</li>
+      </ul>
+      <p>Seus dados não são vendidos nem cedidos para terceiros com fins comerciais.</p>
+    </section>
+
+    <section>
+      <h2>Com quem são compartilhados</h2>
+      <p>
+        O envio dos e-mails é feito pelo <a href="https://kit.com" target="_blank" rel="noopener noreferrer">Kit</a>
+        (antigo ConvertKit), onde sua inscrição fica armazenada. As estatísticas de navegação são
+        processadas pelo Google Analytics. Ambos são serviços de terceiros com políticas próprias
+        de privacidade, e é neles que seus dados ficam hospedados.
+      </p>
+    </section>
+
+    <section>
+      <h2>Como cancelar ou apagar seus dados</h2>
+      <p>
+        Todo e-mail enviado tem um link de cancelamento no rodapé — um clique e você sai da lista,
+        sem precisar justificar. Para pedir a exclusão completa do seu cadastro, ou para saber
+        quais dados seus estão guardados, é só escrever para
+        <a href={SOCIAL_LINKS.email}>{email}</a>.
+      </p>
+    </section>
+
+    <section>
+      <h2>Cookies</h2>
+      <p>
+        O site usa cookies do Google Analytics para medir audiência. Você pode bloqueá-los nas
+        configurações do seu navegador sem perder acesso a nenhum conteúdo daqui.
+      </p>
+    </section>
+
+    <section>
+      <h2>Contato</h2>
+      <p>
+        Qualquer dúvida sobre esta política: <a href={SOCIAL_LINKS.email}>{email}</a>.
+      </p>
+    </section>
+  </main>
+</BaseLayout>
+
+<style>
+  .privacidade {
+    padding-block: var(--space-9);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    max-width: var(--width-prose);
+  }
+  .privacidade h1 {
+    font-size: var(--text-h1);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-semibold);
+    text-wrap: pretty;
+  }
+  .privacidade__meta {
+    margin: 0;
+    font-size: var(--text-caption);
+    color: var(--text-muted);
+  }
+  .privacidade section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    border-top: 1px solid var(--border-subtle);
+    padding-top: var(--space-5);
+  }
+  .privacidade h2 {
+    font-size: var(--text-h3);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-medium);
+  }
+  .privacidade p,
+  .privacidade li {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+  }
+  .privacidade ul {
+    margin: 0;
+    padding-left: var(--space-5);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .privacidade a {
+    color: var(--text-accent);
+    border-bottom: 1px solid var(--alpha-oliva-32);
+  }
+  .privacidade a:hover {
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+  }
+</style>

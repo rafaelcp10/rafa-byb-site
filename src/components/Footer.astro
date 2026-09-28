@@ -16,7 +16,8 @@ const year = new Date().getFullYear();
       <span class="site-footer__heading">Conteúdo</span>
       <a href="/#artigos">Artigos</a>
       <a href="/sobre">Sobre</a>
-      <span class="site-footer__muted">Produtos (em breve)</span>
+      <a href="/21dias">E-book: Desafios de 21 Dias</a>
+      <a href="/privacidade">Privacidade</a>
     </div>
     <div class="site-footer__col">
       <span class="site-footer__heading">Categorias</span>
@@ -74,15 +75,13 @@ const year = new Date().getFullYear();
     flex-direction: column;
     gap: var(--space-3);
   }
-  .site-footer__col a,
-  .site-footer__muted {
+  .site-footer__col a {
     font-size: var(--text-small);
     color: var(--text-secondary);
     text-decoration: none;
     border-bottom: none;
   }
   .site-footer__col a:hover { color: var(--text-primary); }
-  .site-footer__muted { color: var(--text-muted); }
   .site-footer__socials {
     display: flex;
     gap: var(--space-3);

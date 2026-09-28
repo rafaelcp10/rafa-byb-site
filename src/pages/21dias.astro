@@ -1,0 +1,286 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Card from '../components/Card.astro';
+import Field from '../components/Field.astro';
+import Input from '../components/Input.astro';
+import Button from '../components/Button.astro';
+
+const beneficios = [
+  'Um desafio por dia, simples de aplicar na sua rotina real',
+  'Foco em disciplina, hábitos e responsabilidade, sem fórmula mágica',
+  'Feito para quem sabe que tem potencial, mas trava na consistência',
+];
+
+const title = 'Desafios de 21 Dias — e-book gratuito | Rafa Byb';
+const description =
+  'Um passo a passo prático para sair do piloto automático e dar o primeiro passo para construir a sua melhor versão. E-book gratuito.';
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="container ebook">
+    <div class="ebook__grid">
+      <div class="ebook__media">
+        <!-- Placeholder: trocar por <Image src={capa} ... /> quando a arte da capa estiver pronta. -->
+        <div class="ebook__capa" role="img" aria-label="Capa do e-book Desafios de 21 Dias">
+          <span class="ebook__capa-label">Capa do e-book</span>
+        </div>
+      </div>
+
+      <div class="ebook__copy">
+        <Eyebrow register="humano">E-book gratuito</Eyebrow>
+        <h1>Desafios de 21 Dias</h1>
+        <p class="ebook__lede">
+          Um passo a passo prático para sair do piloto automático e dar o primeiro passo para
+          construir a sua melhor versão.
+        </p>
+
+        <ul class="ebook__beneficios">
+          {beneficios.map((b) => (
+            <li>{b}</li>
+          ))}
+        </ul>
+
+        <div data-reveal-up>
+          <Card padding="var(--space-6)" class="ebook__card">
+            <form class="ebook__form" data-ebook-form novalidate>
+              <div data-ebook-step="form" class="ebook__step">
+                <Field label="Nome" htmlFor="ebook-nome">
+                  <Input id="ebook-nome" name="nome" type="text" placeholder="Como devo te chamar" required />
+                </Field>
+
+                <Field label="E-mail" htmlFor="ebook-email">
+                  <Input id="ebook-email" name="email" type="email" placeholder="voce@email.com" required />
+                </Field>
+
+                <!-- Honeypot: invisível para gente, tentador para bot. -->
+                <div class="ebook__hp" aria-hidden="true">
+                  <label for="ebook-website">Não preencha este campo</label>
+                  <input id="ebook-website" name="website" type="text" tabindex="-1" autocomplete="off" />
+                </div>
+
+                <Button type="submit" full size="lg" data-ebook-submit>Quero o e-book grátis</Button>
+
+                <p class="ebook__consent">
+                  Ao baixar, você recebe o e-book por e-mail e passa a receber minha newsletter.
+                  Você pode cancelar quando quiser. Veja a <a href="/privacidade">política de privacidade</a>.
+                </p>
+
+                <p class="ebook__error" data-ebook-error hidden></p>
+              </div>
+
+              <div data-ebook-step="success" class="ebook__step" hidden>
+                <p class="ebook__success" data-ebook-success-msg>
+                  Pronto! Confira seu e-mail para confirmar e receber o e-book. Se não encontrar,
+                  olhe a caixa de spam ou promoções.
+                </p>
+                <a class="btn btn--primary btn--md btn--full" data-ebook-download hidden>Baixar o e-book agora</a>
+              </div>
+            </form>
+          </Card>
+        </div>
+      </div>
+    </div>
+  </main>
+</BaseLayout>
+
+<script>
+  import { initScrollMotion } from '../scripts/scroll-motion';
+  initScrollMotion();
+</script>
+
+<script>
+  // Envia para POST /api/ebook (ver src/pages/api/ebook.ts e src/lib/kit.ts) — mesma
+  // integração usada pela newsletter, só muda o formulário de destino no Kit.
+  const form = document.querySelector<HTMLFormElement>('[data-ebook-form]');
+  const submitBtn = form?.querySelector<HTMLButtonElement>('[data-ebook-submit]');
+  const errorEl = form?.querySelector<HTMLElement>('[data-ebook-error]');
+  const formStep = form?.querySelector<HTMLElement>('[data-ebook-step="form"]');
+  const successStep = form?.querySelector<HTMLElement>('[data-ebook-step="success"]');
+  const successMsg = form?.querySelector<HTMLElement>('[data-ebook-success-msg]');
+  const downloadLink = form?.querySelector<HTMLAnchorElement>('[data-ebook-download]');
+
+  /** Compacta as UTMs da URL no formato "source=x|medium=y|content=z" para o campo "origem". */
+  function lerOrigem(): string {
+    const p = new URLSearchParams(location.search);
+    const partes = (['utm_source', 'utm_medium', 'utm_content'] as const)
+      .map((k) => [k.replace('utm_', ''), p.get(k)] as const)
+      .filter(([, v]) => v)
+      .map(([k, v]) => `${k}=${v}`);
+    return partes.length > 0 ? partes.join('|') : 'direto';
+  }
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!form || !submitBtn) return;
+
+    const dados = new FormData(form);
+    const email = String(dados.get('email') || '').trim();
+    const nome = String(dados.get('nome') || '').trim();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      if (errorEl) {
+        errorEl.textContent = 'Informe um e-mail válido.';
+        errorEl.removeAttribute('hidden');
+      }
+      return;
+    }
+
+    errorEl?.setAttribute('hidden', '');
+    submitBtn.disabled = true;
+    const rotulo = submitBtn.textContent;
+    submitBtn.textContent = 'Enviando...';
+
+    try {
+      const res = await fetch('/api/ebook', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          nome,
+          website: String(dados.get('website') || ''),
+          origem: lerOrigem(),
+          referrer: location.href,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+
+      if (res.ok && data.ok) {
+        formStep?.setAttribute('hidden', '');
+        successStep?.removeAttribute('hidden');
+
+        if (data.jaEraInscrito && data.downloadUrl && downloadLink && successMsg) {
+          successMsg.textContent =
+            'Você já está na lista, então o Kit não reenvia o e-mail de confirmação. Baixe o e-book direto aqui:';
+          downloadLink.href = data.downloadUrl;
+          downloadLink.removeAttribute('hidden');
+        }
+      } else if (errorEl) {
+        errorEl.textContent = data.error || 'Não foi possível enviar agora. Tente novamente em instantes.';
+        errorEl.removeAttribute('hidden');
+      }
+    } catch {
+      if (errorEl) {
+        errorEl.textContent = 'Não foi possível conectar. Verifique sua internet e tente de novo.';
+        errorEl.removeAttribute('hidden');
+      }
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = rotulo;
+    }
+  });
+</script>
+
+<style>
+  .ebook { padding-block: var(--space-9); }
+  .ebook__grid {
+    display: grid;
+    gap: var(--space-8);
+    align-items: start;
+  }
+  @media (min-width: 900px) {
+    .ebook__grid { grid-template-columns: 0.85fr 1.15fr; }
+    .ebook__media { position: sticky; top: 108px; }
+  }
+
+  .ebook__capa {
+    aspect-ratio: 3 / 4;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-subtle);
+    background: linear-gradient(150deg, var(--color-chumbo-700), var(--color-verde-profundo));
+    display: grid;
+    place-items: center;
+  }
+  .ebook__capa-label {
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--alpha-off-white-64);
+  }
+
+  .ebook__copy { display: flex; flex-direction: column; gap: var(--space-5); }
+  .ebook__copy h1 {
+    font-size: var(--text-h1);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-semibold);
+    text-wrap: pretty;
+  }
+  .ebook__lede {
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    max-width: var(--measure-text);
+    margin: 0;
+  }
+
+  .ebook__beneficios {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+  .ebook__beneficios li {
+    position: relative;
+    padding-left: var(--space-5);
+    font-size: var(--text-body);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    max-width: var(--measure-text);
+  }
+  .ebook__beneficios li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.65em;
+    width: 10px;
+    height: 2px;
+    background: var(--color-oliva);
+  }
+
+  .ebook__form { display: block; }
+  .ebook__step { display: flex; flex-direction: column; gap: var(--space-4); }
+  .ebook__step[hidden] { display: none; }
+
+  /* Honeypot fora da tela, sem display:none (bots costumam ignorar campos escondidos assim). */
+  .ebook__hp {
+    position: absolute;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  .ebook__consent {
+    margin: 0;
+    font-size: var(--text-caption);
+    line-height: var(--leading-relaxed);
+    color: var(--text-muted);
+  }
+  .ebook__consent a { color: var(--text-accent); }
+
+  .ebook__error {
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border-left: var(--rule-accent-width) solid var(--color-error);
+    background: var(--surface-raised);
+    font-size: var(--text-small);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+  }
+  .ebook__error[hidden] { display: none; }
+
+  .ebook__success {
+    margin: 0;
+    padding: var(--space-3) var(--space-4);
+    border-left: var(--rule-accent-width) solid var(--color-success);
+    background: var(--surface-raised);
+    font-size: var(--text-small);
+    line-height: var(--leading-relaxed);
+    color: var(--text-primary);
+    border-radius: var(--radius-sm);
+  }
+  [data-ebook-download][hidden] { display: none; }
+</style>
