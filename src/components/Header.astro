@@ -16,7 +16,13 @@ const isHome = path === '/';
       <a href="/" class:list={['site-header__link', { 'site-header__link--active': isHome }]}>Início</a>
       <a href="/#artigos" class="site-header__link">Artigos</a>
       <a href="/sobre" class:list={['site-header__link', { 'site-header__link--active': path === '/sobre' }]}>Sobre</a>
-      <a href="/21dias" class:list={['site-header__link', { 'site-header__link--active': path === '/21dias' }]}>E-book</a>
+      <a
+        href="/produtos"
+        class:list={[
+          'site-header__link',
+          { 'site-header__link--active': path === '/produtos' || path === '/21dias' },
+        ]}
+      >Produtos</a>
     </nav>
     <Button size="sm" data-newsletter-open>Newsletter</Button>
   </div>

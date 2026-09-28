@@ -1,10 +1,12 @@
 ---
+import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Eyebrow from '../components/Eyebrow.astro';
 import Card from '../components/Card.astro';
 import Field from '../components/Field.astro';
 import Input from '../components/Input.astro';
 import Button from '../components/Button.astro';
+import capa from '../assets/site/capa-21dias.webp';
 
 const beneficios = [
   'Um desafio por dia, simples de aplicar na sua rotina real',
@@ -19,11 +21,20 @@ const description =
 
 <BaseLayout title={title} description={description}>
   <main class="container ebook">
+    <a href="/produtos" class="ebook__back">← Todos os produtos</a>
+
     <div class="ebook__grid">
       <div class="ebook__media">
-        <!-- Placeholder: trocar por <Image src={capa} ... /> quando a arte da capa estiver pronta. -->
-        <div class="ebook__capa" role="img" aria-label="Capa do e-book Desafios de 21 Dias">
-          <span class="ebook__capa-label">Capa do e-book</span>
+        <div class="ebook__capa">
+          <Image
+            src={capa}
+            alt="Capa do e-book: 21 dias para transformar seus hábitos e sua vida, de Rafael Pires"
+            width={640}
+            height={960}
+            widths={[320, 480, 640]}
+            sizes="(min-width: 900px) 40vw, 85vw"
+            priority
+          />
         </div>
       </div>
 
@@ -74,7 +85,9 @@ const description =
                   Pronto! Confira seu e-mail para confirmar e receber o e-book. Se não encontrar,
                   olhe a caixa de spam ou promoções.
                 </p>
-                <a class="btn btn--primary btn--md btn--full" data-ebook-download hidden>Baixar o e-book agora</a>
+                <div data-ebook-download-wrap hidden>
+                  <Button href="#" full data-ebook-download>Baixar o e-book agora</Button>
+                </div>
               </div>
             </form>
           </Card>
@@ -99,6 +112,7 @@ const description =
   const successStep = form?.querySelector<HTMLElement>('[data-ebook-step="success"]');
   const successMsg = form?.querySelector<HTMLElement>('[data-ebook-success-msg]');
   const downloadLink = form?.querySelector<HTMLAnchorElement>('[data-ebook-download]');
+  const downloadWrap = form?.querySelector<HTMLElement>('[data-ebook-download-wrap]');
 
   /** Compacta as UTMs da URL no formato "source=x|medium=y|content=z" para o campo "origem". */
   function lerOrigem(): string {
@@ -153,7 +167,7 @@ const description =
           successMsg.textContent =
             'Você já está na lista, então o Kit não reenvia o e-mail de confirmação. Baixe o e-book direto aqui:';
           downloadLink.href = data.downloadUrl;
-          downloadLink.removeAttribute('hidden');
+          downloadWrap?.removeAttribute('hidden');
         }
       } else if (errorEl) {
         errorEl.textContent = data.error || 'Não foi possível enviar agora. Tente novamente em instantes.';
@@ -173,6 +187,15 @@ const description =
 
 <style>
   .ebook { padding-block: var(--space-9); }
+  .ebook__back {
+    display: inline-block;
+    margin-bottom: var(--space-6);
+    font-size: var(--text-small);
+    color: var(--text-muted);
+    text-decoration: none;
+    border-bottom: none;
+  }
+  .ebook__back:hover { color: var(--text-primary); }
   .ebook__grid {
     display: grid;
     gap: var(--space-8);
@@ -184,18 +207,15 @@ const description =
   }
 
   .ebook__capa {
-    aspect-ratio: 3 / 4;
     border-radius: var(--radius-md);
     border: 1px solid var(--border-subtle);
-    background: linear-gradient(150deg, var(--color-chumbo-700), var(--color-verde-profundo));
-    display: grid;
-    place-items: center;
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
   }
-  .ebook__capa-label {
-    font-size: var(--text-caption);
-    letter-spacing: var(--tracking-label);
-    text-transform: uppercase;
-    color: var(--alpha-off-white-64);
+  .ebook__capa :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
   }
 
   .ebook__copy { display: flex; flex-direction: column; gap: var(--space-5); }
@@ -282,5 +302,5 @@ const description =
     color: var(--text-primary);
     border-radius: var(--radius-sm);
   }
-  [data-ebook-download][hidden] { display: none; }
+  [data-ebook-download-wrap][hidden] { display: none; }
 </style>

@@ -1,0 +1,167 @@
+---
+import { Image } from 'astro:assets';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Eyebrow from '../components/Eyebrow.astro';
+import Badge from '../components/Badge.astro';
+import Button from '../components/Button.astro';
+import NewsletterBand from '../components/NewsletterBand.astro';
+import { PRODUTOS, TIPO_LABEL } from '../data/produtos';
+import capa21dias from '../assets/site/capa-21dias.webp';
+
+// Capas por produto. Produto sem capa cadastrada cai no bloco de texto do card.
+const CAPAS: Record<string, ImageMetadata> = {
+  '21dias': capa21dias,
+};
+
+const title = 'Produtos | Rafa Byb — Be Your Best';
+const description =
+  'E-books, cursos e ferramentas para sair do piloto automático e construir consistência. Comece pelo e-book gratuito Desafios de 21 Dias.';
+---
+
+<BaseLayout title={title} description={description}>
+  <main class="container produtos">
+    <header class="produtos__intro">
+      <Eyebrow>Produtos</Eyebrow>
+      <h1>Material para colocar em prática</h1>
+      <p>
+        Cada material aqui nasce do mesmo lugar dos vídeos: um problema real, uma perspectiva
+        clara e uma ação para aplicar hoje. Comece pelo e-book gratuito — cursos, treinamentos
+        e ferramentas entram nesta página conforme forem ficando prontos.
+      </p>
+    </header>
+
+    <ul class="produtos__grid">
+      {PRODUTOS.map((p) => (
+        <li class="produto" data-reveal-card>
+          {CAPAS[p.id] && (
+            <div class="produto__capa">
+              <Image
+                src={CAPAS[p.id]}
+                alt={`Capa do ${TIPO_LABEL[p.tipo].toLowerCase()} ${p.titulo}`}
+                width={520}
+                height={780}
+                widths={[260, 400, 520]}
+                sizes="(min-width: 900px) 300px, 60vw"
+              />
+            </div>
+          )}
+
+          <div class="produto__corpo">
+            <div class="produto__meta">
+              <Badge tone="execucao">{TIPO_LABEL[p.tipo]}</Badge>
+              <span class="produto__preco">{p.preco}</span>
+            </div>
+
+            <h2>{p.titulo}</h2>
+            <p>{p.resumo}</p>
+
+            {p.disponivel && p.href ? (
+              <div class="produto__cta">
+                <Button href={p.href}>{p.cta ?? 'Ver mais'}</Button>
+              </div>
+            ) : (
+              <span class="produto__breve">Em breve</span>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
+  </main>
+
+  <NewsletterBand />
+</BaseLayout>
+
+<script>
+  import { initScrollMotion } from '../scripts/scroll-motion';
+  initScrollMotion();
+</script>
+
+<style>
+  .produtos { padding-block: var(--space-9); }
+
+  .produtos__intro {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    padding-bottom: var(--space-8);
+  }
+  .produtos__intro h1 {
+    font-size: var(--text-h1);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-semibold);
+    max-width: 22ch;
+    text-wrap: pretty;
+  }
+  .produtos__intro p {
+    margin: 0;
+    font-size: var(--text-body-lg);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+    max-width: var(--measure-text);
+  }
+
+  .produtos__grid {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--space-7);
+  }
+  @media (min-width: 720px) {
+    .produtos__grid { grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+  }
+
+  .produto {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-5);
+    background: var(--surface-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-md);
+    padding: var(--space-5);
+  }
+
+  .produto__capa {
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    max-width: 300px;
+    align-self: center;
+  }
+  .produto__capa :global(img) {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  .produto__corpo { display: flex; flex-direction: column; gap: var(--space-3); }
+  .produto__meta { display: flex; align-items: center; gap: var(--space-3); }
+  .produto__preco {
+    font-size: var(--text-caption);
+    font-weight: var(--weight-semibold);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+    color: var(--text-accent);
+  }
+  .produto h2 {
+    font-size: var(--text-h3);
+    line-height: var(--leading-snug);
+    letter-spacing: var(--tracking-heading);
+    font-weight: var(--weight-medium);
+    text-wrap: pretty;
+  }
+  .produto p {
+    margin: 0;
+    font-size: var(--text-body);
+    line-height: var(--leading-relaxed);
+    color: var(--text-secondary);
+  }
+  .produto__cta { align-self: flex-start; margin-top: var(--space-2); }
+  .produto__breve {
+    align-self: flex-start;
+    margin-top: var(--space-2);
+    font-size: var(--text-small);
+    color: var(--text-muted);
+  }
+</style>
