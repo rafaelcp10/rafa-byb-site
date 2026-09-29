@@ -1,8 +1,9 @@
 import type { APIRoute } from 'astro';
-import { subscribeToEbook, KitNotConfiguredError, KitApiError } from '../../lib/kit';
+import { marcarLeadDoEbook, KitNotConfiguredError, KitApiError } from '../../lib/kit';
 
-// Mesmo padrão de /api/newsletter: rota sob demanda (não entra no HTML estático), chave da
-// API só no servidor. Ver src/lib/kit.ts para a integração em si.
+// Rota sob demanda (não entra no HTML estático), para a chave da API do Kit ficar só no
+// servidor. A inscrição no formulário já foi feita pelo navegador (src/scripts/kit-form.ts);
+// aqui só aplicamos a tag e descobrimos se a pessoa já era inscrita confirmada.
 export const prerender = false;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -15,18 +16,11 @@ export const POST: APIRoute = async ({ request }) => {
     return Response.json({ ok: false, error: 'JSON inválido.' }, { status: 400 });
   }
 
-  const { email, nome, origem, referrer, website } = (body ?? {}) as {
-    email?: string;
-    nome?: string;
-    origem?: string;
-    referrer?: string;
-    website?: string;
-  };
+  const { email, website } = (body ?? {}) as { email?: string; website?: string };
 
-  // Honeypot: campo invisível que só um bot preenche. Responde como sucesso para não
-  // entregar a regra, mas não chama o Kit.
+  // Honeypot: campo invisível que só um bot preenche.
   if (website) {
-    return Response.json({ ok: true, jaEraInscrito: false });
+    return Response.json({ ok: true, jaEraInscrito: false, downloadUrl: null });
   }
 
   if (!email || !EMAIL_RE.test(email)) {
@@ -34,12 +28,7 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const { jaEraInscrito } = await subscribeToEbook({
-      email,
-      firstName: nome?.trim() || undefined,
-      origem: origem?.slice(0, 250) || undefined,
-      referrer: referrer?.slice(0, 500) || undefined,
-    });
+    const { jaEraInscrito } = await marcarLeadDoEbook(email);
 
     // Quem já era inscrito confirmado não recebe de novo o e-mail de entrega do Kit —
     // nesse caso devolvemos o link direto do PDF (só se estiver configurado).
@@ -48,14 +37,11 @@ export const POST: APIRoute = async ({ request }) => {
     return Response.json({ ok: true, jaEraInscrito, downloadUrl });
   } catch (err) {
     if (err instanceof KitNotConfiguredError) {
-      return Response.json(
-        { ok: false, error: 'Integração com o Kit ainda não configurada.' },
-        { status: 501 }
-      );
+      return Response.json({ ok: false, error: 'Integração com o Kit ainda não configurada.' }, { status: 501 });
     }
     if (err instanceof KitApiError) {
       console.error('[ebook] Kit API error:', err.message);
-      return Response.json({ ok: false, error: 'Não foi possível confirmar a inscrição agora.' }, { status: 502 });
+      return Response.json({ ok: false, error: 'Não foi possível concluir agora.' }, { status: 502 });
     }
     console.error('[ebook] erro inesperado:', err);
     return Response.json({ ok: false, error: 'Erro inesperado.' }, { status: 500 });

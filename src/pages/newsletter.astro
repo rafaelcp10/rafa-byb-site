@@ -64,10 +64,11 @@ const description =
 </script>
 
 <script>
-  // Integração real com POST /api/newsletter (ver src/pages/api/newsletter.ts e src/lib/kit.ts).
-  // Em produção estática essa rota só funciona depois de instalar um adapter (Vercel/Netlify/Node)
-  // e configurar KIT_API_KEY + KIT_FORM_ID — enquanto isso, o endpoint responde 501 e o formulário
-  // mostra a mensagem de erro abaixo em vez de fingir sucesso.
+  // A inscrição vai direto do navegador para o formulário do Kit — é o que faz o Kit enviar
+  // o e-mail de confirmação. Ver src/scripts/kit-form.ts.
+  import { subscribeToKitForm } from '../scripts/kit-form';
+  import { KIT_FORMS } from '../consts';
+
   const form = document.querySelector<HTMLFormElement>('[data-newsletter-form]');
   const submitBtn = form?.querySelector<HTMLButtonElement>('[data-newsletter-submit]');
   const success = document.querySelector<HTMLElement>('[data-newsletter-success]');
@@ -87,18 +88,21 @@ const description =
     submitBtn.textContent = 'Enviando...';
 
     try {
-      const res = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, preferencia }),
+      const inscricao = await subscribeToKitForm(KIT_FORMS.newsletter, {
+        email,
+        fields: preferencia ? { preferencia } : undefined,
       });
-      const json = await res.json().catch(() => ({}));
 
-      if (res.ok && json.ok) {
+      if (inscricao.quarantineUrl) {
+        location.href = inscricao.quarantineUrl;
+        return;
+      }
+
+      if (inscricao.ok) {
         success?.removeAttribute('hidden');
         form.reset();
       } else if (errorEl) {
-        errorEl.textContent = json.error || 'Não foi possível confirmar agora. Tente novamente em instantes.';
+        errorEl.textContent = 'Não foi possível confirmar agora. Tente novamente em instantes.';
         errorEl.removeAttribute('hidden');
       }
     } catch {

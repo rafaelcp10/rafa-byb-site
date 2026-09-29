@@ -103,8 +103,11 @@ const description =
 </script>
 
 <script>
-  // Envia para POST /api/ebook (ver src/pages/api/ebook.ts e src/lib/kit.ts) — mesma
-  // integração usada pela newsletter, só muda o formulário de destino no Kit.
+  // Dois passos: 1) o navegador inscreve no formulário do Kit (é o que dispara o e-mail com
+  // o e-book); 2) o servidor aplica a tag e diz se a pessoa já era inscrita confirmada.
+  import { subscribeToKitForm } from '../scripts/kit-form';
+  import { KIT_FORMS } from '../consts';
+
   const form = document.querySelector<HTMLFormElement>('[data-ebook-form]');
   const submitBtn = form?.querySelector<HTMLButtonElement>('[data-ebook-submit]');
   const errorEl = form?.querySelector<HTMLElement>('[data-ebook-error]');
@@ -146,32 +149,44 @@ const description =
     submitBtn.textContent = 'Enviando...';
 
     try {
-      const res = await fetch('/api/ebook', {
+      const honeypot = String(dados.get('website') || '');
+
+      const inscricao = honeypot
+        ? { ok: true, quarantineUrl: undefined }
+        : await subscribeToKitForm(KIT_FORMS.ebook21dias, {
+            email,
+            firstName: nome,
+            fields: { origem: lerOrigem() },
+          });
+
+      if (!inscricao.ok) {
+        throw new Error('falha na inscrição');
+      }
+
+      // O Kit marcou como suspeito: a pessoa conclui a verificação na página dele.
+      if (inscricao.quarantineUrl) {
+        location.href = inscricao.quarantineUrl;
+        return;
+      }
+
+      // A inscrição (o que importa) já deu certo. A tag é complementar: se falhar, a pessoa
+      // recebe o e-book do mesmo jeito, então não transformamos isso em erro na tela.
+      const data = await fetch('/api/ebook', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          nome,
-          website: String(dados.get('website') || ''),
-          origem: lerOrigem(),
-          referrer: location.href,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
+        body: JSON.stringify({ email, website: honeypot }),
+      })
+        .then((r) => r.json())
+        .catch(() => ({}));
 
-      if (res.ok && data.ok) {
-        formStep?.setAttribute('hidden', '');
-        successStep?.removeAttribute('hidden');
+      formStep?.setAttribute('hidden', '');
+      successStep?.removeAttribute('hidden');
 
-        if (data.jaEraInscrito && data.downloadUrl && downloadLink && successMsg) {
-          successMsg.textContent =
-            'Você já está na lista, então o Kit não reenvia o e-mail de confirmação. Baixe o e-book direto aqui:';
-          downloadLink.href = data.downloadUrl;
-          downloadWrap?.removeAttribute('hidden');
-        }
-      } else if (errorEl) {
-        errorEl.textContent = data.error || 'Não foi possível enviar agora. Tente novamente em instantes.';
-        errorEl.removeAttribute('hidden');
+      if (data.jaEraInscrito && data.downloadUrl && downloadLink && successMsg) {
+        successMsg.textContent =
+          'Você já está na lista, então o Kit não reenvia o e-mail de confirmação. Baixe o e-book direto aqui:';
+        downloadLink.href = data.downloadUrl;
+        downloadWrap?.removeAttribute('hidden');
       }
     } catch {
       if (errorEl) {
